@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AA Defect Feedback Dashboard</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #1f4037, #99f2c8);
+    min-height: 100vh;
+    padding: 40px 20px;
+}
+
+h2 {
+    text-align: center;
+    color: #ffffff;
+    margin-bottom: 30px;
+}
+
+/* Card */
+.card {
+    background: #ffffff;
+    margin: 0 auto 30px auto;
+    padding: 35px 45px;
+    max-width: 1200px;
+    border-radius: 22px;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.28);
+}
+
+/* Controls */
+.control-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+select {
+    padding: 12px 20px;
+    border-radius: 30px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    min-width: 260px;
+}
+
+.hidden-file { display:none; }
+
+.file-btn {
+    padding: 14px 30px;
+    border-radius: 35px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #fff;
+    background: linear-gradient(135deg, #43cea2, #185a9d);
+}
+
+.file-name {
+    font-size: 13px;
+    color: #555;
+}
+
+/* ===== TWO COLUMN LAYOUT ===== */
+.analysis-grid {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 40px;
+}
+
+/* Charts column */
+.charts-column {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.chart-box {
+    width: 100%;
+}
+
+/* Feedback column */
+.feedback {
+    background: linear-gradient(135deg, #f8fbff, #eef4ff);
+    padding: 30px 32px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.9;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+}
+
+/* Button */
+.bubble-btn {
+    margin-top: 30px;
+    padding: 15px 36px;
+    border-radius: 40px;
+    border: none;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #fff;
+    background: linear-gradient(135deg, #ff6a00, #ee0979);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .analysis-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<h2>AA Defect Feedback Dashboard</h2>
+
+<!-- Upload Section -->
+<div class="card">
+    <div class="control-row">
+        <label for="upload" class="file-btn">Choose Excel File</label>
+        <input type="file" id="upload" accept=".xlsx,.xls" class="hidden-file">
+        <span class="file-name" id="fileName">No file selected</span>
+        <select id="aaSelect" style="display:none"></select>
+    </div>
+</div>
+
+<!-- Analysis Section -->
+<div class="card" id="chartSection" style="display:none">
+
+    <div class="analysis-grid">
+
+        <!-- COLUMN 1: Charts -->
+        <div class="charts-column">
+            <div class="chart-box">
+                <canvas id="missedChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <canvas id="dateChart"></canvas>
+            </div>
+        </div>
+
+        <!-- COLUMN 2: Feedback -->
+        <div>
+            <div class="feedback" id="feedbackText"></div>
+            <button class="bubble-btn" onclick="sendMail()">Share Feedback via Email</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+let data = [];
+let missedChart, dateChart;
+
+const COL_AA = "Associate 1";
+const COL_MISSED = "Missed";
+const COL_INCORRECT = "Incorrect";
+const COL_DATE = "Job Review Date";
+const COL_CATEGORY = "Auditor Reason Code";
+
+/* Excel-safe date parser */
+function parseExcelDate(val) {
+    if (!val) return null;
+    if (typeof val === "number") {
+        return new Date((val - 25569) * 86400 * 1000);
+    }
+    const d = new Date(val);
+    return isNaN(d) ? null : d;
+}
+
+upload.onchange = e => {
+    fileName.innerText = e.target.files[0]?.name || "No file selected";
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const wb = XLSX.read(new Uint8Array(ev.target.result), { type:"array" });
+        data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        loadAAs();
+    };
+    reader.readAsArrayBuffer(e.target.files[0]);
+};
+
+function loadAAs() {
+    aaSelect.style.display = "block";
+    aaSelect.innerHTML = "<option value=''>Select Associate</option>";
+    [...new Set(data.map(d => d[COL_AA]).filter(Boolean))]
+        .forEach(a => aaSelect.innerHTML += `<option>${a}</option>`);
+    aaSelect.onchange = analyse;
+}
+
+function analyse() {
+    const aa = aaSelect.value;
+    if (!aa) return;
+
+    chartSection.style.display = "block";
+    const rows = data.filter(d => d[COL_AA] === aa);
+
+    let incorrect = 0, missed = 0;
+    const missedAttrCount = {};
+    const dateCount = {};
+    const categoryCount = {};
+
+    rows.forEach(r => {
+        if (r[COL_INCORRECT]) incorrect++;
+        if (r[COL_MISSED]) missed++;
+
+        if (r[COL_MISSED]) {
+            r[COL_MISSED].split(",").forEach(a => {
+                const k = a.trim();
+                missedAttrCount[k] = (missedAttrCount[k] || 0) + 1;
+            });
+        }
+
+        const d = parseExcelDate(r[COL_DATE]);
+        if (d) {
+            const key = d.toISOString().split("T")[0];
+            dateCount[key] = (dateCount[key] || 0) + 1;
+        }
+
+        if (r[COL_CATEGORY]) {
+            categoryCount[r[COL_CATEGORY]] =
+                (categoryCount[r[COL_CATEGORY]] || 0) + 1;
+        }
+    });
+
+    const topMissed = Object.entries(missedAttrCount)
+        .sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+    const topCategories = Object.entries(categoryCount)
+        .sort((a,b)=>b[1]-a[1]).slice(0,3)
+        .map(c => `• ${c[0]} (${c[1]})`).join("<br>");
+
+    const primaryDriver = topMissed.length
+        ? topMissed[0][0].split(":")[0]
+        : "N/A";
+
+    drawMissedChart(topMissed);
+    drawDateChart(dateCount);
+
+    feedbackText.innerHTML = `
+        <b>Associate:</b> ${aa}<br><br>
+
+        <b>Defect Summary</b><br>
+        Total Defects: ${rows.length}<br>
+        Primary Defect Driver: ${primaryDriver}<br>
+        Total Incorrect: ${incorrect}<br>
+        Total Missed: ${missed}<br><br>
+
+        <b>Top Missed Attributes</b><br>
+        ${topMissed.map(a=>`• ${a[0]} (${a[1]})`).join("<br>")}<br><br>
+
+        <b>Top 3 Repeated Defect Categories</b><br>
+        ${topCategories}
+    `;
+}
+
+function drawMissedChart(dataArr) {
+    if (missedChart) missedChart.destroy();
+    missedChart = new Chart(document.getElementById("missedChart"), {
+        type: "pie",
+        data: {
+            labels: dataArr.map(d=>d[0]),
+            datasets: [{
+                data: dataArr.map(d=>d[1]),
+                backgroundColor:["#ff7675","#74b9ff","#ffeaa7","#55efc4","#a29bfe"]
+            }]
+        },
+        options:{ plugins:{ legend:{ position:"bottom" } } }
+    });
+}
+
+function drawDateChart(dateData) {
+    if (dateChart) dateChart.destroy();
+    const labels = Object.keys(dateData).sort();
+    const values = labels.map(l => dateData[l]);
+
+    dateChart = new Chart(document.getElementById("dateChart"), {
+        type: "line",
+        data: {
+            labels,
+            datasets: [{
+                label: "Defects per Day",
+                data: values,
+                borderColor: "#185a9d",
+                backgroundColor: "rgba(24,90,157,0.25)",
+                tension: 0.35,
+                fill: true
+            }]
+        },
+        options:{ scales:{ y:{ beginAtZero:true } } }
+    });
+}
+
+function sendMail() {
+    const aa = aaSelect.value;
+    const body =
+`Hi ${aa},
+
+Please find below the defect trend observed during the recent quality audit.
+
+${feedbackText.innerText}
+
+Regards,
+`;
+
+    window.location.href =
+        `mailto:?subject=${encodeURIComponent("Defect Trend Feedback")}&body=${encodeURIComponent(body)}`;
+}
+</script>
+
+</body>
+</html>
