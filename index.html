@@ -2,320 +2,415 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>AA Defect Feedback Dashboard</title>
+<title>AA Defect Insight & Feedback Dashboard</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body {
-    margin: 0;
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: linear-gradient(135deg, #1f4037, #99f2c8);
-    min-height: 100vh;
-    padding: 40px 20px;
+body{
+    margin:0;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background:linear-gradient(135deg,#1f4037,#99f2c8);
+    min-height:100vh;
+    padding:40px 20px;
 }
+h2{color:#fff;text-align:center;margin-bottom:30px;}
 
-h2 {
-    text-align: center;
-    color: #ffffff;
-    margin-bottom: 30px;
-}
-
-/* Card */
-.card {
-    background: #ffffff;
-    margin: 0 auto 30px auto;
-    padding: 35px 45px;
-    max-width: 1200px;
-    border-radius: 22px;
-    box-shadow: 0 18px 45px rgba(0,0,0,0.28);
+.card{
+    background:#fff;
+    max-width:1300px;
+    margin:0 auto 30px;
+    padding:35px 45px;
+    border-radius:22px;
+    box-shadow:0 18px 45px rgba(0,0,0,.28);
 }
 
 /* Controls */
-.control-row {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    align-items: center;
+.control-row{
+    display:flex;
+    gap:30px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+}
+.hidden-file{display:none;}
+.file-btn{
+    padding:14px 30px;
+    border-radius:35px;
+    color:#fff;
+    font-weight:600;
+    cursor:pointer;
+    background:linear-gradient(135deg,#43cea2,#185a9d);
+}
+.file-name{font-size:13px;color:#555;margin-top:12px;margin-left:40px}
+
+/* Dropdown */
+.dropdown{position:relative;}
+.dropdown-btn{
+    padding:14px 22px;
+    border-radius:30px;
+    border:1px solid #ccc;
+    background:#fff;
+    cursor:pointer;
+    min-width:260px;
+}
+.dropdown-content{
+    display:none;
+    position:absolute;
+    top:110%;
+    left:0;
+    background:#fff;
+    border:1px solid #ccc;
+    border-radius:16px;
+    padding:12px;
+    max-height:220px;
+    overflow-y:auto;
+    width:100%;
+    z-index:100;
+}
+.dropdown-content label{
+    display:block;
+    margin-bottom:6px;
+    cursor:pointer;
 }
 
-select {
-    padding: 12px 20px;
-    border-radius: 30px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-    min-width: 260px;
+/* Layout */
+.analysis-grid{
+    display:grid;
+    grid-template-columns:380px 1fr;
+    gap:30px;
+    align-items:flex-start;
+}
+.charts-column{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
 }
 
-.hidden-file { display:none; }
-
-.file-btn {
-    padding: 14px 30px;
-    border-radius: 35px;
-    font-weight: 600;
-    cursor: pointer;
-    color: #fff;
-    background: linear-gradient(135deg, #43cea2, #185a9d);
+/* Feedback */
+.feedback{
+    background:linear-gradient(135deg,#f8fbff,#eef4ff);
+    padding:26px;
+    border-radius:18px;
+    line-height:1.8;
+    font-size:15px;
+    word-break:break-word;
+    overflow-wrap:anywhere;
 }
 
-.file-name {
-    font-size: 13px;
-    color: #555;
+/* Attribute blocks */
+.attr-block{
+    border:1px solid #ddd;
+    border-radius:14px;
+    margin-top:14px;
+}
+.attr-header{
+    padding:12px 16px;
+    font-weight:600;
+    color:#0b5cad;
+    cursor:pointer;
+}
+.attr-body{
+    display:none;
+    padding:14px 16px;
+    font-size:14px;
 }
 
-/* ===== TWO COLUMN LAYOUT ===== */
-.analysis-grid {
-    display: grid;
-    grid-template-columns: 420px 1fr;
-    gap: 40px;
+.asin-list{padding-left:18px;}
+.asin-list li{font-size:13px;margin-bottom:10px;}
+.asin-list a{color:#185a9d;text-decoration:none;}
+.asin-list a:hover{text-decoration:underline;}
+
+.section-title{
+    margin:25px 0 10px;
+    font-weight:700;
+    font-size:16px;
+    color:#333;
 }
 
-/* Charts column */
-.charts-column {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
+.bubble-btn{
+    margin-top:30px;
+    padding:15px 40px;
+    border-radius:40px;
+    border:none;
+    font-weight:bold;
+    font-size:15px;
+    color:#fff;
+    cursor:pointer;
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+}
+.image-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:6px;
+}
+.image-row,
+.image-row * {
+    list-style: none !important;
 }
 
-.chart-box {
-    width: 100%;
+.image-row a{
+    padding:6px 12px;
+    border-radius:16px;
+    background:#eef4ff;
+    font-size:12px;
+    text-decoration:none;
+    color:#185a9d;
+    border:1px solid #d6e2ff;
+}
+.image-row a:hover{
+    background:#dce8ff;
 }
 
-/* Feedback column */
-.feedback {
-    background: linear-gradient(135deg, #f8fbff, #eef4ff);
-    padding: 30px 32px;
-    border-radius: 18px;
-    font-size: 15px;
-    line-height: 1.9;
-    word-wrap: break-word;
-    overflow-wrap: anywhere;
-}
 
-/* Button */
-.bubble-btn {
-    margin-top: 30px;
-    padding: 15px 36px;
-    border-radius: 40px;
-    border: none;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #fff;
-    background: linear-gradient(135deg, #ff6a00, #ee0979);
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-    .analysis-grid {
-        grid-template-columns: 1fr;
-    }
+@media(max-width:900px){
+    .analysis-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
 
 <body>
 
-<h2>AA Defect Feedback Dashboard</h2>
+<h2>AA Defect Insight & Feedback Dashboard</h2>
 
-<!-- Upload Section -->
+<!-- Upload -->
 <div class="card">
     <div class="control-row">
-        <label for="upload" class="file-btn">Choose Excel File</label>
-        <input type="file" id="upload" accept=".xlsx,.xls" class="hidden-file">
-        <span class="file-name" id="fileName">No file selected</span>
-        <select id="aaSelect" style="display:none"></select>
+        <div>
+            <label class="file-btn" for="upload">Choose Excel File</label>
+            <input id="upload" type="file" accept=".xlsx,.xls" class="hidden-file">
+            <div id="fileName" class="file-name">No file selected</div>
+        </div>
+
+        <div class="dropdown" id="dropdownBox" style="display:none">
+            <div class="dropdown-btn" id="dropdownBtn">Select Associates</div>
+            <div class="dropdown-content" id="associateList"></div>
+        </div>
     </div>
 </div>
 
-<!-- Analysis Section -->
+<!-- Analysis -->
 <div class="card" id="chartSection" style="display:none">
 
     <div class="analysis-grid">
 
-        <!-- COLUMN 1: Charts -->
+        <!-- Charts -->
         <div class="charts-column">
-            <div class="chart-box">
-                <canvas id="missedChart"></canvas>
-            </div>
-            <div class="chart-box">
-                <canvas id="dateChart"></canvas>
-            </div>
+            <canvas id="missedChart"></canvas>
+            <canvas id="dateChart"></canvas>
         </div>
 
-        <!-- COLUMN 2: Feedback -->
-        <div>
-            <div class="feedback" id="feedbackText"></div>
-            <button class="bubble-btn" onclick="sendMail()">Share Feedback via Email</button>
-        </div>
+        <!-- Feedback -->
+        <div class="feedback" id="feedbackText"></div>
 
     </div>
 
+    <div class="section-title">Top 3 Repeated Defect Categories</div>
+    <div class="feedback" id="topCategories"></div>
+
+    <button class="bubble-btn" onclick="sendMail()">Share Feedback via Email</button>
 </div>
 
 <script>
-let data = [];
-let missedChart, dateChart;
+let data=[], missedChart, dateChart;
 
-const COL_AA = "Associate 1";
-const COL_MISSED = "Missed";
-const COL_INCORRECT = "Incorrect";
-const COL_DATE = "Job Review Date";
-const COL_CATEGORY = "Auditor Reason Code";
+const COL_AA="Associate 1";
+const COL_MISSED="Missed";
+const COL_DATE="Job Review Date";
+const COL_CATEGORY="Auditor Reason Code";
+const COL_ASIN="ASIN";
+const COL_RETAIL="Retail Page URL";
+const COL_HTML="HTML CODE";
+const URL_COLS=["URL1","URL2","URL3"];
 
-/* Excel-safe date parser */
-function parseExcelDate(val) {
-    if (!val) return null;
-    if (typeof val === "number") {
-        return new Date((val - 25569) * 86400 * 1000);
-    }
-    const d = new Date(val);
-    return isNaN(d) ? null : d;
+/* Helpers */
+function parseExcelDate(v){
+    if(!v) return null;
+    if(typeof v==="number") return new Date((v-25569)*86400*1000);
+    const d=new Date(v); return isNaN(d)?null:d;
 }
 
-upload.onchange = e => {
-    fileName.innerText = e.target.files[0]?.name || "No file selected";
-    const reader = new FileReader();
-    reader.onload = ev => {
-        const wb = XLSX.read(new Uint8Array(ev.target.result), { type:"array" });
-        data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        loadAAs();
+function extractUrls(text){
+    if(!text) return [];
+    return text.toString().match(/https?:\/\/[^\s"]+/g) || [];
+}
+
+function extractImageUrlsFromHtml(html){
+    if(!html) return [];
+    const tags = html.toString().match(/<img[^>]+src=["']([^"']+)["']/gi);
+    if(!tags) return [];
+    return tags.map(t=>{
+        const m=t.match(/src=["']([^"']+)["']/i);
+        return m?m[1]:null;
+    }).filter(Boolean);
+}
+
+/* Upload */
+upload.onchange=e=>{
+    fileName.innerText=e.target.files[0]?.name||"No file selected";
+    const r=new FileReader();
+    r.onload=ev=>{
+        const wb=XLSX.read(new Uint8Array(ev.target.result),{type:"array"});
+        data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        loadAssociates();
     };
-    reader.readAsArrayBuffer(e.target.files[0]);
+    r.readAsArrayBuffer(e.target.files[0]);
 };
 
-function loadAAs() {
-    aaSelect.style.display = "block";
-    aaSelect.innerHTML = "<option value=''>Select Associate</option>";
-    [...new Set(data.map(d => d[COL_AA]).filter(Boolean))]
-        .forEach(a => aaSelect.innerHTML += `<option>${a}</option>`);
-    aaSelect.onchange = analyse;
+/* Associates */
+function loadAssociates(){
+    dropdownBox.style.display="block";
+    associateList.innerHTML=`<label><input type="checkbox" value="ALL"> <b>All Associates</b></label>`;
+    [...new Set(data.map(d=>d[COL_AA]).filter(Boolean))]
+        .forEach(a=>{
+            associateList.innerHTML+=`<label><input type="checkbox" value="${a}"> ${a}</label>`;
+        });
+
+    associateList.querySelectorAll("input").forEach(cb=>{
+        cb.onchange=e=>{
+            if(e.target.value==="ALL") toggleAll();
+            else syncAll();
+            updateDropdownText();
+            analyse();
+        };
+    });
 }
 
-function analyse() {
-    const aa = aaSelect.value;
-    if (!aa) return;
+function toggleAll(){
+    const all=associateList.querySelector('input[value="ALL"]');
+    associateList.querySelectorAll('input:not([value="ALL"])')
+        .forEach(o=>o.checked=all.checked);
+}
+function syncAll(){
+    const all=associateList.querySelector('input[value="ALL"]');
+    const others=[...associateList.querySelectorAll('input:not([value="ALL"])')];
+    all.checked=others.every(o=>o.checked);
+}
+function getSelected(){
+    return [...associateList.querySelectorAll('input:checked')]
+        .map(c=>c.value).filter(v=>v!=="ALL");
+}
+function updateDropdownText(){
+    const s=getSelected();
+    dropdownBtn.innerText=s.length?`${s.length} Selected`:"Select Associates";
+}
+dropdownBtn.onclick=()=>associateList.style.display=
+    associateList.style.display==="block"?"none":"block";
+document.addEventListener("click",e=>{
+    if(!dropdownBox.contains(e.target)) associateList.style.display="none";
+});
 
-    chartSection.style.display = "block";
-    const rows = data.filter(d => d[COL_AA] === aa);
+/* Analyse */
+function analyse(){
+    const selected=getSelected();
+    if(!selected.length) return;
 
-    let incorrect = 0, missed = 0;
-    const missedAttrCount = {};
-    const dateCount = {};
-    const categoryCount = {};
+    chartSection.style.display="block";
+    const rows=data.filter(d=>selected.includes(d[COL_AA]));
 
-    rows.forEach(r => {
-        if (r[COL_INCORRECT]) incorrect++;
-        if (r[COL_MISSED]) missed++;
+    let attrMap={}, asinMap={}, dateCount={}, catCount={};
 
-        if (r[COL_MISSED]) {
-            r[COL_MISSED].split(",").forEach(a => {
-                const k = a.trim();
-                missedAttrCount[k] = (missedAttrCount[k] || 0) + 1;
+    rows.forEach(r=>{
+        if(r[COL_MISSED]){
+            r[COL_MISSED].split(",").forEach(a=>{
+                a=a.trim();
+                attrMap[a]=(attrMap[a]||0)+1;
+                asinMap[a]=asinMap[a]||[];
+                if(r[COL_ASIN]){
+                    asinMap[a].push({
+                        asin:r[COL_ASIN],
+                        retail:r[COL_RETAIL],
+                        evidence:URL_COLS.flatMap(c=>extractUrls(r[c])),
+                        images:extractImageUrlsFromHtml(r[COL_HTML])
+                    });
+                }
             });
         }
-
-        const d = parseExcelDate(r[COL_DATE]);
-        if (d) {
-            const key = d.toISOString().split("T")[0];
-            dateCount[key] = (dateCount[key] || 0) + 1;
+        if(r[COL_CATEGORY]){
+            catCount[r[COL_CATEGORY]]=(catCount[r[COL_CATEGORY]]||0)+1;
         }
-
-        if (r[COL_CATEGORY]) {
-            categoryCount[r[COL_CATEGORY]] =
-                (categoryCount[r[COL_CATEGORY]] || 0) + 1;
+        const d=parseExcelDate(r[COL_DATE]);
+        if(d){
+            const k=d.toISOString().split("T")[0];
+            dateCount[k]=(dateCount[k]||0)+1;
         }
     });
 
-    const topMissed = Object.entries(missedAttrCount)
+    const topMissed=Object.entries(attrMap)
         .sort((a,b)=>b[1]-a[1]).slice(0,5);
-
-    const topCategories = Object.entries(categoryCount)
-        .sort((a,b)=>b[1]-a[1]).slice(0,3)
-        .map(c => `• ${c[0]} (${c[1]})`).join("<br>");
-
-    const primaryDriver = topMissed.length
-        ? topMissed[0][0].split(":")[0]
-        : "N/A";
 
     drawMissedChart(topMissed);
     drawDateChart(dateCount);
 
-    feedbackText.innerHTML = `
-        <b>Associate:</b> ${aa}<br><br>
-
+    feedbackText.innerHTML=`
+        <b>Selected Associates:</b> ${selected.join(", ")}<br><br>
         <b>Defect Summary</b><br>
         Total Defects: ${rows.length}<br>
-        Primary Defect Driver: ${primaryDriver}<br>
-        Total Incorrect: ${incorrect}<br>
-        Total Missed: ${missed}<br><br>
+        Primary Defect Driver: ${topMissed[0]?.[0]||"N/A"}<br><br>
 
-        <b>Top Missed Attributes</b><br>
-        ${topMissed.map(a=>`• ${a[0]} (${a[1]})`).join("<br>")}<br><br>
-
-        <b>Top 3 Repeated Defect Categories</b><br>
-        ${topCategories}
+        <b>Top Missed Attributes</b>
+        ${topMissed.map((t,i)=>`
+            <div class="attr-block">
+                <div class="attr-header" onclick="toggleAttr(${i})">
+                    ${t[0]} (${t[1]})
+                </div>
+                <div class="attr-body" id="attr${i}">
+                    <ul class="asin-list">
+                        ${(asinMap[t[0]]||[]).map(o=>`
+                            <li>
+                                ${o.asin}
+                                ${o.retail?` – <a href="${o.retail}" target="_blank">Retail Page</a>`:""}
+                                ${o.evidence.length?`
+                                    <div><b>Evidence Links:</b>
+                                        <ul>${o.evidence.map(u=>`<li><a href="${u}" target="_blank">View Evidence</a></li>`).join("")}</ul>
+                                    </div>`:""}
+                                ${o.images.length?`
+                                    <div><b>Images:</b>
+                                        <ul class="image-row">${o.images.map(i=>`<li><a href="${i}" target="_blank">View Image</a></li>`).join("")}</ul>
+                                    </div>`:""}
+                            </li>
+                        `).join("")}
+                    </ul>
+                </div>
+            </div>
+        `).join("")}
     `;
+
+    topCategories.innerHTML=
+        Object.entries(catCount)
+            .sort((a,b)=>b[1]-a[1])
+            .slice(0,3)
+            .map(c=>`• ${c[0]} (${c[1]})`)
+            .join("<br>");
 }
 
-function drawMissedChart(dataArr) {
-    if (missedChart) missedChart.destroy();
-    missedChart = new Chart(document.getElementById("missedChart"), {
-        type: "pie",
-        data: {
-            labels: dataArr.map(d=>d[0]),
-            datasets: [{
-                data: dataArr.map(d=>d[1]),
-                backgroundColor:["#ff7675","#74b9ff","#ffeaa7","#55efc4","#a29bfe"]
-            }]
-        },
-        options:{ plugins:{ legend:{ position:"bottom" } } }
+/* Charts */
+function toggleAttr(i){
+    const b=document.getElementById("attr"+i);
+    b.style.display=b.style.display==="block"?"none":"block";
+}
+function drawMissedChart(a){
+    if(missedChart)missedChart.destroy();
+    missedChart=new Chart(document.getElementById("missedChart"),{
+        type:"pie",
+        data:{labels:a.map(x=>x[0]),datasets:[{data:a.map(x=>x[1])}]}
+    });
+}
+function drawDateChart(o){
+    if(dateChart)dateChart.destroy();
+    const l=Object.keys(o).sort();
+    dateChart=new Chart(document.getElementById("dateChart"),{
+        type:"line",
+        data:{labels:l,datasets:[{ label: "DoD Defect Count", data:l.map(x=>o[x]),fill:true}]}
     });
 }
 
-function drawDateChart(dateData) {
-    if (dateChart) dateChart.destroy();
-    const labels = Object.keys(dateData).sort();
-    const values = labels.map(l => dateData[l]);
-
-    dateChart = new Chart(document.getElementById("dateChart"), {
-        type: "line",
-        data: {
-            labels,
-            datasets: [{
-                label: "Defects per Day",
-                data: values,
-                borderColor: "#185a9d",
-                backgroundColor: "rgba(24,90,157,0.25)",
-                tension: 0.35,
-                fill: true
-            }]
-        },
-        options:{ scales:{ y:{ beginAtZero:true } } }
-    });
-}
-
-function sendMail() {
-    const aa = aaSelect.value;
-    const body =
-`Hi ${aa},
-
-Please find below the defect trend observed during the recent quality audit.
-
-${feedbackText.innerText}
-
-Action Required:
-Kindly review the above attributes and ensure complete attribute validation before final submission to avoid repeat defects.
-
-Regards,
-`;
-
-    window.location.href =
-        `mailto:?subject=${encodeURIComponent("Defect Trend Feedback")}&body=${encodeURIComponent(body)}`;
+function sendMail(){
+    window.location.href=
+        `mailto:?subject=Defect Trend Feedback&body=${encodeURIComponent(feedbackText.innerText)}`;
 }
 </script>
 
 </body>
 </html>
-
