@@ -8,7 +8,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-/* ===== ORIGINAL STYLES (UNCHANGED) ===== */
 body{
     margin:0;
     font-family:"Segoe UI",Arial,sans-serif;
@@ -83,13 +82,6 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
     word-break:break-word;
     overflow-wrap:anywhere;
 }
-.section-title{
-    margin:25px 0 10px;
-    font-weight:700;
-    font-size:16px;
-    color:#333;
-}
-
 
 .attr-block{border:1px solid #ddd;border-radius:14px;margin-top:14px;}
 .attr-header{
@@ -107,7 +99,25 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
 .asin-list{padding-left:18px;}
 .asin-list li{font-size:13px;margin-bottom:10px;}
 .asin-list a{color:#185a9d;text-decoration:none;}
-.asin-list a:hover{text-decoration:underline;}
+
+.section-title{
+    margin:25px 0 10px;
+    font-weight:700;
+    font-size:16px;
+    color:#333;
+}
+
+.bubble-btn{
+    margin-top:30px;
+    padding:15px 40px;
+    border-radius:40px;
+    border:none;
+    font-weight:bold;
+    font-size:15px;
+    color:#fff;
+    cursor:pointer;
+    background:linear-gradient(135deg,#ff6a00,#ee0979);
+}
 
 .image-row{
     display:flex;
@@ -126,18 +136,6 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
     color:#185a9d;
     border:1px solid #d6e2ff;
 }
-.bubble-btn{
-    margin-top:30px;
-    padding:15px 40px;
-    border-radius:40px;
-    border:none;
-    font-weight:bold;
-    font-size:15px;
-    color:#fff;
-    cursor:pointer;
-    background:linear-gradient(135deg,#ff6a00,#ee0979);
-}
-
 </style>
 </head>
 
@@ -145,7 +143,6 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
 
 <h2>AA Defect Insight & Feedback Dashboard</h2>
 
-<!-- Upload -->
 <div class="card">
     <div class="control-row">
         <div>
@@ -154,19 +151,16 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
             <div id="fileName" class="file-name">No file selected</div>
         </div>
 
-        <!-- Manager -->
         <div class="dropdown" id="managerBox" style="display:none">
             <div class="dropdown-btn" id="managerBtn">Select Manager</div>
             <div class="dropdown-content" id="managerList"></div>
         </div>
 
-        <!-- Associate -->
         <div class="dropdown" id="dropdownBox" style="display:none">
             <div class="dropdown-btn" id="dropdownBtn">Select Associates</div>
             <div class="dropdown-content" id="associateList"></div>
         </div>
 
-        <!-- Date -->
         <div class="dropdown" id="dateBox" style="display:none">
             <div class="dropdown-btn" id="dateBtn">Select Dates</div>
             <div class="dropdown-content" id="dateList"></div>
@@ -174,9 +168,7 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
     </div>
 </div>
 
-<!-- Analysis -->
 <div class="card" id="chartSection" style="display:none">
-
     <div class="analysis-grid">
         <div class="charts-column">
             <canvas id="missedChart"></canvas>
@@ -197,7 +189,7 @@ let data=[], missedChart, dateChart;
 
 const COL_MANAGER="Manager";
 const COL_AA="Associate 1";
-const COL_MISSED="Missed";
+const COL_INCORRECT="Incorrect";     // ✅ NEW COLUMN USED
 const COL_DATE="Job Review Date";
 const COL_CATEGORY="Auditor Reason Code";
 const COL_ASIN="ASIN";
@@ -300,7 +292,7 @@ function loadDates(){
     });
 }
 
-/* Analyse (ORIGINAL STRUCTURE PRESERVED) */
+/* Analyse (Top Missed Attributes from Incorrect column) */
 function analyse(){
     const aas=getSelected(associateList);
     const dates=getSelected(dateList);
@@ -320,8 +312,8 @@ function analyse(){
     let attrMap={}, asinMap={}, dateCount={}, catCount={};
 
     rows.forEach(r=>{
-        if(r[COL_MISSED]){
-            r[COL_MISSED].split(",").forEach(a=>{
+        if(r[COL_INCORRECT]){
+            r[COL_INCORRECT].split(",").forEach(a=>{
                 a=a.trim();
                 attrMap[a]=(attrMap[a]||0)+1;
                 asinMap[a]=asinMap[a]||[];
@@ -392,11 +384,8 @@ function analyse(){
 function toggleAttr(i){
     const body=document.getElementById("attr"+i);
     const icon=document.getElementById("icon"+i);
-    if(body.style.display==="block"){
-        body.style.display="none"; icon.innerText="+";
-    }else{
-        body.style.display="block"; icon.innerText="−";
-    }
+    if(body.style.display==="block"){body.style.display="none";icon.innerText="+";}
+    else{body.style.display="block";icon.innerText="−";}
 }
 function drawMissedChart(a){
     if(missedChart)missedChart.destroy();
