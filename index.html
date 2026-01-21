@@ -109,6 +109,14 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
     font-weight:600;
     color:#0b5cad;
     cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.toggle-icon{
+    font-size:20px;
+    font-weight:bold;
+    color:#185a9d;
 }
 .attr-body{
     display:none;
@@ -139,6 +147,8 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
     cursor:pointer;
     background:linear-gradient(135deg,#ff6a00,#ee0979);
 }
+
+/* Images */
 .image-row{
     display:flex;
     flex-wrap:wrap;
@@ -146,10 +156,9 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
     margin-top:6px;
 }
 .image-row,
-.image-row * {
-    list-style: none !important;
+.image-row *{
+    list-style:none !important;
 }
-
 .image-row a{
     padding:6px 12px;
     border-radius:16px;
@@ -162,7 +171,6 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
 .image-row a:hover{
     background:#dce8ff;
 }
-
 
 @media(max-width:900px){
     .analysis-grid{grid-template-columns:1fr;}
@@ -194,16 +202,12 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
 <div class="card" id="chartSection" style="display:none">
 
     <div class="analysis-grid">
-
-        <!-- Charts -->
         <div class="charts-column">
             <canvas id="missedChart"></canvas>
             <canvas id="dateChart"></canvas>
         </div>
 
-        <!-- Feedback -->
         <div class="feedback" id="feedbackText"></div>
-
     </div>
 
     <div class="section-title">Top 3 Repeated Defect Categories</div>
@@ -230,15 +234,13 @@ function parseExcelDate(v){
     if(typeof v==="number") return new Date((v-25569)*86400*1000);
     const d=new Date(v); return isNaN(d)?null:d;
 }
-
 function extractUrls(text){
     if(!text) return [];
     return text.toString().match(/https?:\/\/[^\s"]+/g) || [];
 }
-
 function extractImageUrlsFromHtml(html){
     if(!html) return [];
-    const tags = html.toString().match(/<img[^>]+src=["']([^"']+)["']/gi);
+    const tags=html.toString().match(/<img[^>]+src=["']([^"']+)["']/gi);
     if(!tags) return [];
     return tags.map(t=>{
         const m=t.match(/src=["']([^"']+)["']/i);
@@ -262,11 +264,9 @@ upload.onchange=e=>{
 function loadAssociates(){
     dropdownBox.style.display="block";
     associateList.innerHTML=`<label><input type="checkbox" value="ALL"> <b>All Associates</b></label>`;
-    [...new Set(data.map(d=>d[COL_AA]).filter(Boolean))]
-        .forEach(a=>{
-            associateList.innerHTML+=`<label><input type="checkbox" value="${a}"> ${a}</label>`;
-        });
-
+    [...new Set(data.map(d=>d[COL_AA]).filter(Boolean))].forEach(a=>{
+        associateList.innerHTML+=`<label><input type="checkbox" value="${a}"> ${a}</label>`;
+    });
     associateList.querySelectorAll("input").forEach(cb=>{
         cb.onchange=e=>{
             if(e.target.value==="ALL") toggleAll();
@@ -276,11 +276,9 @@ function loadAssociates(){
         };
     });
 }
-
 function toggleAll(){
     const all=associateList.querySelector('input[value="ALL"]');
-    associateList.querySelectorAll('input:not([value="ALL"])')
-        .forEach(o=>o.checked=all.checked);
+    associateList.querySelectorAll('input:not([value="ALL"])').forEach(o=>o.checked=all.checked);
 }
 function syncAll(){
     const all=associateList.querySelector('input[value="ALL"]');
@@ -288,8 +286,7 @@ function syncAll(){
     all.checked=others.every(o=>o.checked);
 }
 function getSelected(){
-    return [...associateList.querySelectorAll('input:checked')]
-        .map(c=>c.value).filter(v=>v!=="ALL");
+    return [...associateList.querySelectorAll('input:checked')].map(c=>c.value).filter(v=>v!=="ALL");
 }
 function updateDropdownText(){
     const s=getSelected();
@@ -337,8 +334,7 @@ function analyse(){
         }
     });
 
-    const topMissed=Object.entries(attrMap)
-        .sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const topMissed=Object.entries(attrMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
     drawMissedChart(topMissed);
     drawDateChart(dateCount);
@@ -353,7 +349,8 @@ function analyse(){
         ${topMissed.map((t,i)=>`
             <div class="attr-block">
                 <div class="attr-header" onclick="toggleAttr(${i})">
-                    ${t[0]} (${t[1]})
+                    <span>${t[0]} (${t[1]})</span>
+                    <span class="toggle-icon" id="icon${i}">+</span>
                 </div>
                 <div class="attr-body" id="attr${i}">
                     <ul class="asin-list">
@@ -387,8 +384,15 @@ function analyse(){
 
 /* Charts */
 function toggleAttr(i){
-    const b=document.getElementById("attr"+i);
-    b.style.display=b.style.display==="block"?"none":"block";
+    const body=document.getElementById("attr"+i);
+    const icon=document.getElementById("icon"+i);
+    if(body.style.display==="block"){
+        body.style.display="none";
+        icon.innerText="+";
+    }else{
+        body.style.display="block";
+        icon.innerText="−";
+    }
 }
 function drawMissedChart(a){
     if(missedChart)missedChart.destroy();
@@ -402,10 +406,9 @@ function drawDateChart(o){
     const l=Object.keys(o).sort();
     dateChart=new Chart(document.getElementById("dateChart"),{
         type:"line",
-        data:{labels:l,datasets:[{ label: "DoD Defect Count", data:l.map(x=>o[x]),fill:true}]}
+        data:{labels:l,datasets:[{label:"DoD Defect Count",data:l.map(x=>o[x]),fill:true}]}
     });
 }
-
 function sendMail(){
     window.location.href=
         `mailto:?subject=Defect Trend Feedback&body=${encodeURIComponent(feedbackText.innerText)}`;
