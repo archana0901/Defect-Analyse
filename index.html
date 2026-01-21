@@ -341,9 +341,9 @@ function analyse(){
         <b>Selected Associates:</b> ${aas.join(", ")}<br><br>
         <b>Defect Summary</b><br>
         Total Defects: ${rows.length}<br>
-        Primary Defect Driver: ${topMissed[0]?.[0]||"N/A"}<br><br>
+        Primary Defect Contributor: ${topMissed[0]?.[0]||"N/A"}<br><br>
 
-        <b>Top Missed Attributes</b>
+        <b>Top Incorrect Attributes</b>
         ${topMissed.map((t,i)=>`
             <div class="attr-block">
                 <div class="attr-header" onclick="toggleAttr(${i})">
@@ -420,3 +420,4 @@ document.addEventListener("click",e=>{
 
 </body>
 </html>
+
