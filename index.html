@@ -16,6 +16,7 @@ body{
     padding:40px 20px;
 }
 h2{color:#fff;text-align:center;margin-bottom:30px;}
+
 .card{
     background:#fff;
     max-width:1300px;
@@ -24,6 +25,8 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
     border-radius:22px;
     box-shadow:0 18px 45px rgba(0,0,0,.28);
 }
+
+/* Controls */
 .control-row{
     display:flex;
     gap:30px;
@@ -39,8 +42,9 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
     cursor:pointer;
     background:linear-gradient(135deg,#43cea2,#185a9d);
 }
-.file-name{font-size:13px;color:#555;margin-top:12px;margin-left:40px}
+.file-name{font-size:13px;color:#555;margin-top:12px;margin-left:10px}
 
+/* Dropdown */
 .dropdown{position:relative;}
 .dropdown-btn{
     padding:14px 22px;
@@ -64,15 +68,25 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
     width:100%;
     z-index:100;
 }
-.dropdown-content label{display:block;margin-bottom:6px;cursor:pointer;}
+.dropdown-content label{
+    display:block;
+    margin-bottom:6px;
+    cursor:pointer;
+}
 
+/* Layout */
 .analysis-grid{
     display:grid;
     grid-template-columns:380px 1fr;
     gap:30px;
 }
-.charts-column{display:flex;flex-direction:column;gap:20px;}
+.charts-column{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
 
+/* Feedback */
 .feedback{
     background:linear-gradient(135deg,#f8fbff,#eef4ff);
     padding:26px;
@@ -83,7 +97,36 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
     overflow-wrap:anywhere;
 }
 
-.attr-block{border:1px solid #ddd;border-radius:14px;margin-top:14px;}
+/* Selected chips */
+.selected-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:8px;
+}
+.selected-chip{
+    background:#e8f0ff;
+    border:1px solid #cfdcff;
+    padding:4px 10px;
+    border-radius:14px;
+    font-size:12px;
+    color:#0b5cad;
+    white-space:nowrap;
+}
+.more-toggle{
+    cursor:pointer;
+    color:#185a9d;
+    font-size:12px;
+    font-weight:600;
+}
+.more-toggle:hover{text-decoration:underline;}
+
+/* Attribute blocks */
+.attr-block{
+    border:1px solid #ddd;
+    border-radius:14px;
+    margin-top:14px;
+}
 .attr-header{
     padding:12px 16px;
     font-weight:600;
@@ -93,12 +136,53 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
     justify-content:space-between;
     align-items:center;
 }
-.toggle-icon{font-size:20px;font-weight:bold;color:#185a9d;}
-.attr-body{display:none;padding:14px 16px;font-size:14px;}
+.toggle-icon{
+    font-size:20px;
+    font-weight:bold;
+    color:#185a9d;
+}
+.attr-body{
+    display:none;
+    padding:14px 16px;
+    font-size:14px;
+}
 
 .asin-list{padding-left:18px;}
-.asin-list li{font-size:13px;margin-bottom:10px;}
-.asin-list a{color:#185a9d;text-decoration:none;}
+.asin-list li{
+    font-size:13px;
+    margin-bottom:12px;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+}
+
+.reason-text{
+    display:inline-block;
+    max-width:100%;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+font-weight:700;
+    font-size:12px;
+
+}
+
+/* Images */
+.image-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:6px;
+}
+.image-row,
+.image-row *{list-style:none!important;}
+.image-row a{
+    padding:6px 12px;
+    border-radius:16px;
+    background:#eef4ff;
+    font-size:12px;
+    text-decoration:none;
+    color:#185a9d;
+    border:1px solid #d6e2ff;
+}
 
 .section-title{
     margin:25px 0 10px;
@@ -119,22 +203,8 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
     background:linear-gradient(135deg,#ff6a00,#ee0979);
 }
 
-.image-row{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:6px;
-}
-.image-row,
-.image-row *{list-style:none!important;}
-.image-row a{
-    padding:6px 12px;
-    border-radius:16px;
-    background:#eef4ff;
-    font-size:12px;
-    text-decoration:none;
-    color:#185a9d;
-    border:1px solid #d6e2ff;
+@media(max-width:900px){
+    .analysis-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -174,7 +244,6 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
             <canvas id="missedChart"></canvas>
             <canvas id="dateChart"></canvas>
         </div>
-
         <div class="feedback" id="feedbackText"></div>
     </div>
 
@@ -186,16 +255,16 @@ h2{color:#fff;text-align:center;margin-bottom:30px;}
 
 <script>
 let data=[], missedChart, dateChart;
+let aaExpanded=false;
 
 const COL_MANAGER="Manager";
 const COL_AA="Associate 1";
-const COL_INCORRECT="Incorrect";     // ✅ NEW COLUMN USED
+const COL_INCORRECT="Incorrect";
 const COL_DATE="Job Review Date";
 const COL_CATEGORY="Auditor Reason Code";
 const COL_ASIN="ASIN";
 const COL_RETAIL="Retail Page URL";
 const COL_HTML="HTML CODE";
-const URL_COLS=["URL1","URL2","URL3"];
 
 /* Helpers */
 function parseExcelDate(v){
@@ -204,19 +273,16 @@ function parseExcelDate(v){
     const d=new Date(v); return isNaN(d)?null:d;
 }
 function formatDate(d){return d.toISOString().split("T")[0];}
-function extractUrls(t){return t?t.toString().match(/https?:\/\/[^\s"]+/g)||[]:[];}
 function extractImageUrlsFromHtml(h){
     if(!h) return [];
     const tags=h.toString().match(/<img[^>]+src=["']([^"']+)["']/gi);
-    if(!tags) return [];
-    return tags.map(t=>t.match(/src=["']([^"']+)["']/i)[1]);
+    return tags?tags.map(t=>t.match(/src=["']([^"']+)["']/i)[1]):[];
 }
 
-/* ALL toggle helpers */
+/* Dropdown helpers */
 function handleAllToggle(box){
     const all=box.querySelector('input[value="ALL"]');
-    const others=[...box.querySelectorAll('input:not([value="ALL"])')];
-    others.forEach(o=>o.checked=all.checked);
+    [...box.querySelectorAll('input:not([value="ALL"])')].forEach(o=>o.checked=all.checked);
 }
 function syncAllFromChildren(box){
     const all=box.querySelector('input[value="ALL"]');
@@ -224,8 +290,7 @@ function syncAllFromChildren(box){
     all.checked=others.length && others.every(o=>o.checked);
 }
 function getSelected(box){
-    return [...box.querySelectorAll('input:checked')]
-        .map(i=>i.value).filter(v=>v!=="ALL");
+    return [...box.querySelectorAll('input:checked')].map(i=>i.value).filter(v=>v!=="ALL");
 }
 function updateText(btn,box,label){
     const c=getSelected(box).length;
@@ -248,8 +313,9 @@ upload.onchange=e=>{
 function loadManagers(){
     managerBox.style.display="block";
     managerList.innerHTML=`<label><input type="checkbox" value="ALL"> <b>All Managers</b></label>`;
-    [...new Set(data.map(d=>d[COL_MANAGER]).filter(Boolean))]
-        .forEach(m=>managerList.innerHTML+=`<label><input type="checkbox" value="${m}"> ${m}</label>`);
+    [...new Set(data.map(d=>d[COL_MANAGER]).filter(Boolean))].forEach(m=>{
+        managerList.innerHTML+=`<label><input type="checkbox" value="${m}"> ${m}</label>`;
+    });
     managerList.querySelectorAll("input").forEach(cb=>{
         cb.onchange=e=>{
             e.target.value==="ALL"?handleAllToggle(managerList):syncAllFromChildren(managerList);
@@ -263,14 +329,16 @@ function loadManagers(){
 function loadAssociates(){
     dropdownBox.style.display="block";
     associateList.innerHTML=`<label><input type="checkbox" value="ALL"> <b>All Associates</b></label>`;
-    const managers=getSelected(managerList);
-    const filtered=managers.length?data.filter(d=>managers.includes(d[COL_MANAGER])):data;
-    [...new Set(filtered.map(d=>d[COL_AA]).filter(Boolean))]
-        .forEach(a=>associateList.innerHTML+=`<label><input type="checkbox" value="${a}"> ${a}</label>`);
+    const mgrs=getSelected(managerList);
+    const filtered=mgrs.length?data.filter(d=>mgrs.includes(d[COL_MANAGER])):data;
+    [...new Set(filtered.map(d=>d[COL_AA]).filter(Boolean))].forEach(a=>{
+        associateList.innerHTML+=`<label><input type="checkbox" value="${a}"> ${a}</label>`;
+    });
     associateList.querySelectorAll("input").forEach(cb=>{
         cb.onchange=e=>{
             e.target.value==="ALL"?handleAllToggle(associateList):syncAllFromChildren(associateList);
             updateText(dropdownBtn,associateList,"Associates");
+            aaExpanded=false;
             analyse();
         };
     });
@@ -280,9 +348,10 @@ function loadAssociates(){
 function loadDates(){
     dateBox.style.display="block";
     dateList.innerHTML=`<label><input type="checkbox" value="ALL"> <b>All Dates</b></label>`;
-    [...new Set(data.map(d=>parseExcelDate(d[COL_DATE])).filter(Boolean).map(formatDate))]
-        .sort()
-        .forEach(dt=>dateList.innerHTML+=`<label><input type="checkbox" value="${dt}"> ${dt}</label>`);
+    [...new Set(data.map(d=>parseExcelDate(d[COL_DATE])).filter(Boolean).map(formatDate))].sort()
+        .forEach(dt=>{
+            dateList.innerHTML+=`<label><input type="checkbox" value="${dt}"> ${dt}</label>`;
+        });
     dateList.querySelectorAll("input").forEach(cb=>{
         cb.onchange=e=>{
             e.target.value==="ALL"?handleAllToggle(dateList):syncAllFromChildren(dateList);
@@ -292,7 +361,13 @@ function loadDates(){
     });
 }
 
-/* Analyse (Top Missed Attributes from Incorrect column) */
+/* Toggle selected AAs */
+function toggleMoreAAs(){
+    aaExpanded=!aaExpanded;
+    analyse();
+}
+
+/* Analyse */
 function analyse(){
     const aas=getSelected(associateList);
     const dates=getSelected(dateList);
@@ -317,14 +392,12 @@ function analyse(){
                 a=a.trim();
                 attrMap[a]=(attrMap[a]||0)+1;
                 asinMap[a]=asinMap[a]||[];
-                if(r[COL_ASIN]){
-                    asinMap[a].push({
-                        asin:r[COL_ASIN],
-                        retail:r[COL_RETAIL],
-                        evidence:URL_COLS.flatMap(c=>extractUrls(r[c])),
-                        images:extractImageUrlsFromHtml(r[COL_HTML])
-                    });
-                }
+                asinMap[a].push({
+                    asin:r[COL_ASIN],
+                    retail:r[COL_RETAIL],
+                    reason:r[COL_CATEGORY],
+                    images:extractImageUrlsFromHtml(r[COL_HTML])
+                });
             });
         }
         if(r[COL_CATEGORY]) catCount[r[COL_CATEGORY]]=(catCount[r[COL_CATEGORY]]||0)+1;
@@ -334,16 +407,23 @@ function analyse(){
 
     const topMissed=Object.entries(attrMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
-    drawMissedChart(topMissed);
-    drawDateChart(dateCount);
+    /* Selected Associates UI */
+    const aaHtml = aaExpanded || aas.length<=3
+        ? aas.map(a=>`<span class="selected-chip">${a}</span>`).join("")
+        : aas.slice(0,3).map(a=>`<span class="selected-chip">${a}</span>`).join("")
+          + `<span class="more-toggle" onclick="toggleMoreAAs()">+${aas.length-3} more</span>`;
 
     feedbackText.innerHTML=`
-        <b>Selected Associates:</b> ${aas.join(", ")}<br><br>
+        <b>Selected Associates:</b>
+        <div class="selected-list">${aaHtml}
+            ${aaExpanded && aas.length>3 ? `<span class="more-toggle" onclick="toggleMoreAAs()">Show less</span>`:""}
+        </div><br>
+
         <b>Defect Summary</b><br>
         Total Defects: ${rows.length}<br>
-        Primary Defect Contributor: ${topMissed[0]?.[0]||"N/A"}<br><br>
+        Primary Defect Driver: ${topMissed[0]?.[0]||"N/A"}<br><br>
 
-        <b>Top Incorrect Attributes</b>
+        <b>Top Missed Attributes</b>
         ${topMissed.map((t,i)=>`
             <div class="attr-block">
                 <div class="attr-header" onclick="toggleAttr(${i})">
@@ -354,15 +434,14 @@ function analyse(){
                     <ul class="asin-list">
                         ${(asinMap[t[0]]||[]).map(o=>`
                             <li>
-                                ${o.asin}
+                                <b>${o.asin}</b>
                                 ${o.retail?` – <a href="${o.retail}" target="_blank">Retail Page</a>`:""}
-                                ${o.evidence.length?`
-                                    <div><b>Evidence Links:</b>
-                                        <ul>${o.evidence.map(u=>`<li><a href="${u}" target="_blank">View Evidence</a></li>`).join("")}</ul>
-                                    </div>`:""}
+                                ${o.reason?` – <span class="reason-text">${o.reason}</span>`:""}
                                 ${o.images.length?`
                                     <div><b>Images:</b>
-                                        <ul class="image-row">${o.images.map(i=>`<li><a href="${i}" target="_blank">View Image</a></li>`).join("")}</ul>
+                                        <ul class="image-row">
+                                            ${o.images.map(i=>`<li><a href="${i}" target="_blank">View Image</a></li>`).join("")}
+                                        </ul>
                                     </div>`:""}
                             </li>
                         `).join("")}
@@ -372,20 +451,22 @@ function analyse(){
         `).join("")}
     `;
 
-    topCategories.innerHTML=
-        Object.entries(catCount)
-            .sort((a,b)=>b[1]-a[1])
-            .slice(0,3)
-            .map(c=>`• ${c[0]} (${c[1]})`)
-            .join("<br>");
+    drawMissedChart(topMissed);
+    drawDateChart(dateCount);
+
+    topCategories.innerHTML=Object.entries(catCount)
+        .sort((a,b)=>b[1]-a[1])
+        .slice(0,3)
+        .map(c=>`• ${c[0]} (${c[1]})`)
+        .join("<br>");
 }
 
 /* Charts */
 function toggleAttr(i){
-    const body=document.getElementById("attr"+i);
-    const icon=document.getElementById("icon"+i);
-    if(body.style.display==="block"){body.style.display="none";icon.innerText="+";}
-    else{body.style.display="block";icon.innerText="−";}
+    const b=document.getElementById("attr"+i);
+    const ic=document.getElementById("icon"+i);
+    b.style.display=b.style.display==="block"?"none":"block";
+    ic.innerText=b.style.display==="block"?"−":"+";
 }
 function drawMissedChart(a){
     if(missedChart)missedChart.destroy();
@@ -403,8 +484,51 @@ function drawDateChart(o){
     });
 }
 function sendMail(){
-    window.location.href=
-        `mailto:?subject=Defect Trend Feedback&body=${encodeURIComponent(feedbackText.innerText)}`;
+
+    // attributes
+    const topAttrs = Object.entries(
+        [...document.querySelectorAll(".attr-header span:first-child")]
+            .slice(0,3)
+            .reduce((acc, el) => {
+                const txt = el.innerText;
+                const name = txt.substring(0, txt.lastIndexOf("(")).trim();
+                acc[name] = true;
+                return acc;
+            }, {})
+    ).map(x => x[0]);
+
+    const mailBody = `Hi,
+
+I am writing to discuss the observations from the recent quality review, with specific focus on controllable defects identified during the evaluated period.
+
+Based on the analysis of your defect data, the majority of defects are driven by recurring incorrect attributes, indicating gaps in consistency and adherence to established quality standards. The most frequently observed incorrect attributes include:
+
+${topAttrs.map(a => `- ${a}`).join("\n")}
+
+Despite ongoing support, guidance, and clarifications, there has been no sustained improvement trend, which is a concern. As these defects are largely controllable, improvement is expected through better review rigor and consistent application of process guidelines.
+
+Feedback:
+- Defects are primarily driven by repeat errors rather than new or complex scenarios.
+- Existing guidance and SOPs are not being applied consistently.
+- Stronger attribute-level validation is required prior to submission.
+
+Action Items:
+1. Review the top incorrect attributes and revisit the corresponding SOPs and training material.
+2. Apply enhanced self-audit checks focused on these attributes before submission.
+3. Track recurring errors daily and implement corrective actions immediately.
+4. Demonstrate measurable improvement in upcoming review cycles.
+
+Please treat this feedback with priority. Continued recurrence of the same controllable defects may lead to further escalation.
+
+If you need any clarification or additional support, feel free to reach out.
+
+Regards,
+`;
+
+    window.location.href =
+        `mailto:?subject=${encodeURIComponent(
+            "Quality Performance Review – Controllable Defects and Improvement Actions"
+        )}&body=${encodeURIComponent(mailBody)}`;
 }
 
 /* Dropdown close */
@@ -420,4 +544,3 @@ document.addEventListener("click",e=>{
 
 </body>
 </html>
-
