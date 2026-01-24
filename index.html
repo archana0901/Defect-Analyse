@@ -436,7 +436,7 @@ function analyse(){
                             <li>
                                 <b>${o.asin}</b>
                                 ${o.retail?` – <a href="${o.retail}" target="_blank">Retail Page</a>`:""}
-                                ${o.reason?`  <span class="reason-text">${o.reason}</span>`:""}
+                                ${o.reason?` - Auditor Reason Code  <span class="reason-text">${o.reason}</span>`:""}
                                 ${o.images.length?`
                                     <div><b>Images:</b>
                                         <ul class="image-row">
@@ -544,4 +544,5 @@ document.addEventListener("click",e=>{
 
 </body>
 </html>
+
 
