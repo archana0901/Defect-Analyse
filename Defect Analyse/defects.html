@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AA-wise Defect Details</title>
+
+<style>
+/* ========== GLOBAL ========== */
+body{
+    margin:0;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background:
+        radial-gradient(circle at top left,#c7d2fe,transparent 40%),
+        radial-gradient(circle at bottom right,#99f6e4,transparent 40%),
+        linear-gradient(180deg,#eef2ff,#f8fafc);
+    min-height:100vh;
+    padding:30px;
+    color:#0f172a;
+}
+
+/* ========== HEADER ========== */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+.header h1{
+    font-size:28px;
+    font-weight:800;
+}
+.back-btn{
+    padding:10px 18px;
+    border-radius:999px;
+    border:none;
+    background:linear-gradient(135deg,#6366f1,#22d3ee);
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+}
+
+/* ========== FILTER BAR ========== */
+.filter-bar{
+    display:flex;
+    gap:24px;
+    flex-wrap:wrap;
+    background:rgba(255,255,255,.6);
+    backdrop-filter:blur(12px);
+    padding:18px 22px;
+    border-radius:18px;
+    box-shadow:0 12px 30px rgba(0,0,0,.15);
+    margin-bottom:30px;
+}
+.filter-group{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+.filter-group label{
+    font-weight:700;
+    font-size:14px;
+}
+.filter-group select{
+    min-width:240px;
+    padding:10px 14px;
+    border-radius:14px;
+    border:1px solid #c7d2fe;
+    background:#fff;
+    font-size:14px;
+    cursor:pointer;
+}
+
+/* ========== DEFECT LIST ========== */
+.defect-list{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+overflow-x: hidden;
+word-break: break-word;
+}
+.defect-item{
+    background:#fff;
+    border-radius:20px;
+    padding:20px 22px;
+    box-shadow:0 12px 28px rgba(0,0,0,.12);
+}
+.defect-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+
+}
+.asin{
+    font-weight:800;
+    font-size:15px;
+}
+.badge{
+    background:#22c55e;
+    color:#fff;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+}
+.meta{
+    font-size:13px;
+    margin:6px 0;
+}
+.meta a{
+    color:#4f46e5;
+    font-weight:600;
+    text-decoration:none;
+
+}
+
+/* ========== IMAGES ========== */
+.image-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:10px;
+}
+.image-grid img{
+    width:120px;
+    height:120px;
+    object-fit:cover;
+    border-radius:14px;
+    border:1px solid #e5e7eb;
+    cursor:pointer;
+    transition:.25s;
+}
+.image-grid img:hover{
+    transform:scale(1.05);
+}
+
+/* ========== EMPTY STATE ========== */
+.empty{
+    text-align:center;
+    padding:60px;
+    font-weight:700;
+    color:#64748b;
+}
+
+.dropdown{position:relative;min-width:260px;}
+.dropdown-btn{
+    padding:12px 18px;
+    border-radius:999px;
+    border:1px solid #c7d2fe;
+    background:#fff;
+    cursor:pointer;
+    font-weight:600;
+}
+.dropdown-content{
+    display:none;
+    position:absolute;
+    top:120%;
+    left:0;
+    width:100%;
+    max-height:240px;
+    overflow-y:auto;
+    background:#fff;
+    border-radius:14px;
+    padding:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,.15);
+    z-index:50;
+}
+.dropdown-content label{
+    display:flex;
+    gap:8px;
+    padding:6px 4px;
+    cursor:pointer;
+    font-size:13px;
+}
+
+.filter-bar{
+    display:flex;
+    gap:32px;
+    align-items:flex-end;
+    flex-wrap:wrap;
+}
+
+.filter-label{
+    font-weight:700;
+    font-size:14px;
+    margin-left:6px;
+    margin-bottom:6px;
+}
+
+.dropdown{
+    display:flex;
+    flex-direction:column;
+    min-width:280px;
+}
+
+.dropdown-btn{
+    padding:10px 10px;
+    border-radius:999px;
+    border:1px solid #c7d2fe;
+    background:#fff;
+    cursor:pointer;
+    font-weight:600;
+    text-align:left;
+}
+
+.dropdown-content label{
+    display:flex;
+    gap:10px;
+    padding:8px 6px;
+    cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>AA-wise Defect Details</h1>
+    <button class="back-btn" onclick="goBack()">← Back</button>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+    <div class="dropdown" id="managerBox">
+        <label class="filter-label">Managers</label>
+        <div class="dropdown-btn" id="managerBtn">Select Managers</div>
+        <div class="dropdown-content" id="managerList"></div>
+    </div>
+
+   <div class="dropdown" id="associateBox">
+<label class="filter-label">Associates</label>
+        <div class="dropdown-btn" id="associateBtn">Select Associates</div>
+        <div class="dropdown-content" id="associateList"></div>
+    </div>
+</div>
+
+<!-- DEFECT LIST -->
+<div id="defectContainer" class="defect-list"></div>
+<script>
+/* ===== READ DATA FROM PAGE-1 ===== */
+const defectRows = JSON.parse(sessionStorage.getItem("aa_defect_rows") || "[]");
+const selectedManagers = JSON.parse(sessionStorage.getItem("selected_managers") || []);
+const COL_MISSED = "Missed"; 
+const managerList = document.getElementById("managerList");
+const managerBtn = document.getElementById("managerBtn");
+const managerBox = document.getElementById("managerBox");
+const associateList = document.getElementById("associateList");
+const associateBtn = document.getElementById("associateBtn");
+const associateBox = document.getElementById("associateBox");
+const defectContainer = document.getElementById("defectContainer");
+
+/* ===== MANAGER DROPDOWN ===== */
+managerList.innerHTML = `
+    <label><input type="checkbox" value="ALL"> <b>All Managers</b></label>
+`;
+
+[...new Set(defectRows.map(r=>r["Manager"]).filter(Boolean))].forEach(m=>{
+    managerList.innerHTML += `
+        <label>
+            <input type="checkbox" value="${m}"> ${m}
+        </label>
+    `;
+});
+
+managerList.querySelectorAll("input").forEach(cb=>{
+    cb.onchange = ()=>{
+        if(cb.value==="ALL"){
+            managerList.querySelectorAll('input:not([value="ALL"])')
+                .forEach(x=>x.checked=cb.checked);
+        }
+        updateManagerText();
+        applyFilter();
+    };
+});
+
+function getSelectedManagers(){
+    return [...managerList.querySelectorAll('input:checked')]
+        .map(i=>i.value)
+        .filter(v=>v!=="ALL");
+}
+
+function updateManagerText(){
+    const sel = getSelectedManagers();
+    managerBtn.innerText = sel.length
+        ? `${sel.length} Selected`
+        : "Select Managers";
+}
+
+managerBtn.onclick = ()=>{
+    managerList.style.display =
+        managerList.style.display==="block" ? "none" : "block";
+};
+
+document.addEventListener("click",e=>{
+    if(!managerBox.contains(e.target)) managerList.style.display="none";
+    if(!associateBox.contains(e.target)) associateList.style.display="none";
+});
+
+/* ===== ASSOCIATE CHECKBOX DROPDOWN ===== */
+associateList.innerHTML = `
+    <label><input type="checkbox" value="ALL"> <b>All Associates</b></label>
+`;
+
+[...new Set(defectRows.map(r=>r["Associate 1"]).filter(Boolean))].forEach(a=>{
+    associateList.innerHTML += `
+        <label>
+            <input type="checkbox" value="${a}"> ${a}
+        </label>
+    `;
+});
+
+associateList.querySelectorAll("input").forEach(cb=>{
+    cb.onchange = ()=>{
+        if(cb.value==="ALL"){
+            associateList.querySelectorAll('input:not([value="ALL"])')
+                .forEach(x=>x.checked=cb.checked);
+        }
+        updateAssociateText();
+        applyFilter();
+    };
+});
+
+/* ===== DROPDOWN TOGGLE ===== */
+associateBtn.onclick = ()=>{
+    associateList.style.display =
+        associateList.style.display==="block" ? "none" : "block";
+};
+
+document.addEventListener("click",e=>{
+    if(!associateBox.contains(e.target)){
+        associateList.style.display="none";
+    }
+});
+
+/* ===== HELPERS ===== */
+function getSelectedAAs(){
+    return [...associateList.querySelectorAll('input:checked')]
+        .map(i=>i.value)
+        .filter(v=>v!=="ALL");
+}
+
+function updateAssociateText(){
+    const sel = getSelectedAAs();
+    associateBtn.innerText = sel.length
+        ? `${sel.length} Selected`
+        : "Select Associates";
+}
+
+
+
+/* ===== IMAGE & DISPUTE ===== */
+function extractImages(html){
+    if(!html) return [];
+    const m = html.match(/<img[^>]+src=["']([^"']+)["']/gi);
+    return m ? m.map(x=>x.match(/src=["']([^"']+)["']/i)[1]) : [];
+}
+function extractDisputeLink(html){
+    const m = html?.match(/https:\/\/share\.amazon\.com\/[^\s"'<>]+/i);
+    return m ? m[0] : null;
+}
+
+/* ===== RENDER ===== */
+function renderDefects(rows){
+    if(!rows.length){
+        defectContainer.innerHTML = `<div class="empty">No defects found</div>`;
+        return;
+    }
+
+    defectContainer.innerHTML = rows.map(r=>{
+        const images = extractImages(r["HTML CODE"]);
+        const dispute = extractDisputeLink(r["HTML CODE"]);
+const incorrectAttr = r["Incorrect"] || "N/A";
+const missedAttr = r[COL_MISSED] || "N/A";
+
+        return `
+        <div class="defect-item">
+            <div class="defect-header">
+                <div class="asin">${r["ASIN"]||"N/A"}</div>
+                <span class="badge">${r["Associate 1"]}</span>
+            </div>
+
+            <div class="meta">
+                <b>Manager:</b> ${r["Manager"]||"N/A"}<br>
+                <div class="meta-row">
+    <span class="meta-label"><b>Incorrect Attribute:</b></span>
+    <span class="meta-value">${r["Incorrect"] || "N/A"}</span>
+</div>
+
+<div class="meta-row">
+    <span class="meta-label"><b>Missed Attribute:</b></span>
+    <span class="meta-value">${r[COL_MISSED] || "N/A"}</span>
+</div>
+
+                <b>Reason:</b> ${r["Auditor Reason Code"]||"N/A"}<br>
+                ${r["Retail Page URL"] ? `<a href="${r["Retail Page URL"]}" target="_blank">Retail Page ↗</a>`:""}
+                ${dispute ? ` | <a href="${dispute}" target="_blank" style="color:#dc2626;font-weight:700">Dispute ↗</a>`:""}
+            </div>
+
+            ${images.length ? `
+                <div class="image-grid">
+                    ${images.map(i=>`<img src="${i}" onclick="window.open('${i}')">`).join("")}
+                </div>`:""}
+        </div>`;
+    }).join("");
+}
+
+/* ===== FILTER ===== */
+function applyFilter(){
+    let rows = [...defectRows];
+
+    const selectedManagers = getSelectedManagers();
+    const selectedAAs = getSelectedAAs();
+
+    if(selectedManagers.length){
+        rows = rows.filter(r =>
+            selectedManagers.includes(r["Manager"])
+        );
+    }
+
+    if(selectedAAs.length){
+        rows = rows.filter(r =>
+            selectedAAs.includes(r["Associate 1"])
+        );
+    }
+
+    renderDefects(rows);
+}
+
+managerSelect.onchange = applyFilter;
+
+/* ===== INIT ===== */
+renderDefects(defectRows);
+
+function goBack(){
+    window.history.back();
+}
+</script>
+
+</body>
+</html>
