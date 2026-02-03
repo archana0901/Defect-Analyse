@@ -462,12 +462,7 @@ function analyse(){
         }
         return true;
     });
-sessionStorage.setItem("aa_defect_rows", JSON.stringify(rows));
-sessionStorage.setItem("selected_aas", JSON.stringify(aas));
-sessionStorage.setItem(
-    "selected_managers",
-    JSON.stringify(getSelected(managerList))
-);
+
 latestRows = rows;
     chartSection.style.display="block";
 
