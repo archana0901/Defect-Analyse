@@ -389,9 +389,21 @@ if(mgr.length) rows=rows.filter(r=>mgr.includes(r[COL_MANAGER]));
 if(aa.length) rows=rows.filter(r=>aa.includes(r[COL_AA]));
 if(dt.length) rows=rows.filter(r=>dt.includes(excelDate(r[COL_DATE])));
 
-if(showOnlyUnreviewed) rows=rows.filter(r=>!reviewedDefects[getKey(r[COL_ASIN],r[COL_AA])]);
-if(showOnlyReviewed) rows=rows.filter(r=>reviewedDefects[getKey(r[COL_ASIN],r[COL_AA])]);
-if(showOnlyDisputed) rows=rows.filter(r=>disputedDefects[getKey(r[COL_ASIN],r[COL_AA])]);
+if(showOnlyUnreviewed)
+rows = rows.filter(r => {
+    const key = getKey(r[COL_ASIN], r[COL_AA]);
+    return !reviewedDefects[key] && !disputedDefects[key];
+});
+
+if(showOnlyReviewed)
+rows = rows.filter(r => 
+    reviewedDefects[getKey(r[COL_ASIN], r[COL_AA])]
+);
+
+if(showOnlyDisputed)
+rows = rows.filter(r => 
+    disputedDefects[getKey(r[COL_ASIN], r[COL_AA])]
+);
 
 renderDefects(rows);
 }
