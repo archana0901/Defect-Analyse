@@ -177,10 +177,12 @@ word-break: break-word;
 /* ===== FILTER BAR ALIGNMENT FIX ===== */
 .filter-bar{
     display:flex;
-    align-items:flex-start;   /* key fix */
+    align-items:flex-start;
     gap:40px;
-    flex-wrap:wrap;
+    flex-wrap:nowrap;          
+    overflow-x:auto;           
 }
+
 
 /* All groups same vertical structure */
 .filter-group,
@@ -199,14 +201,14 @@ word-break: break-word;
 
 /* Upload group height balance */
 .upload-group{
-    min-width:260px;
+   min-width:180px;
 }
 
 /* Button & dropdown same height */
 .upload-btn{height:20px;
     display:flex;
     align-items:center;
-    padding:0 22px;
+    padding:0 18px;
     border-radius:999px;
     font-size:14px;
 }
@@ -214,7 +216,7 @@ word-break: break-word;
     height:40px;
     display:flex;
     align-items:center;
-    padding:0 22px;
+    padding:0 10px;
     border-radius:999px;
     font-size:14px;
 }
@@ -312,6 +314,12 @@ word-break: break-word;
         <div class="dropdown-btn" id="associateBtn">Select Associates</div>
         <div class="dropdown-content" id="associateList"></div>
     </div>
+<div class="dropdown" id="dateBox">
+    <label class="filter-label">Job Review Date</label>
+    <div class="dropdown-btn" id="dateBtn">Select Dates</div>
+    <div class="dropdown-content" id="dateList"></div>
+</div>
+
 </div>
 
 <!-- DEFECT LIST -->
@@ -336,18 +344,28 @@ const associateList = document.getElementById("associateList");
 const associateBtn = document.getElementById("associateBtn");
 const associateBox = document.getElementById("associateBox");
 const defectContainer = document.getElementById("defectContainer");
+const COL_DATE = "Job Review Date";
+
+const dateList = document.getElementById("dateList");
+const dateBtn = document.getElementById("dateBtn");
+const dateBox = document.getElementById("dateBox");
+
 
 /* ===== DATA ===== */
 let defectRows = [];
 
 /* ===== UPLOAD EXCEL ===== */
 upload.onchange = e => {
+const fileName = document.getElementById("fileName");
+fileName.innerText = upload.files[0]?.name || "No file selected";
+
     const reader = new FileReader();
     reader.onload = ev => {
         const wb = XLSX.read(new Uint8Array(ev.target.result), { type: "array" });
         defectRows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
         loadManagers();
         loadAssociates();
+        loadDates();
         renderDefects(defectRows);
     };
     reader.readAsArrayBuffer(e.target.files[0]);
@@ -423,6 +441,69 @@ function updateAssociateText(){
     associateBtn.innerText = c ? `${c} Selected` : "Select Associates";
 }
 
+function excelDateToJSDate(serial){
+    if(typeof serial === "number"){
+        const utc_days  = Math.floor(serial - 25569);
+        const utc_value = utc_days * 86400;                                        
+        const date_info = new Date(utc_value * 1000);
+        return date_info.toISOString().split("T")[0];
+    }
+    return serial;
+}
+
+function getSelectedManagers(){
+    return getSelected(managerList);
+}
+
+function getSelectedAAs(){
+    return getSelected(associateList);
+}
+
+function getSelectedDates(){
+    return getSelected(dateList);
+}
+
+function updateDateText(){
+    const c = getSelectedDates().length;
+    dateBtn.innerText = c ? `${c} Selected` : "Select Dates";
+}
+
+
+function loadDates(filteredRows = defectRows){
+    dateList.innerHTML = `
+        <label><input type="checkbox" value="ALL"> <b>All Dates</b></label>
+    `;
+
+    const uniqueDates = [
+        ...new Set(
+            filteredRows
+                .map(r => excelDateToJSDate(r[COL_DATE]))
+                .filter(Boolean)
+        )
+    ];
+
+    uniqueDates.sort((a,b)=> new Date(b) - new Date(a)); // newest first
+
+    uniqueDates.forEach(d => {
+        dateList.innerHTML += `
+            <label>
+                <input type="checkbox" value="${d}"> ${d}
+            </label>
+        `;
+    });
+
+    dateList.querySelectorAll("input").forEach(cb=>{
+        cb.onchange = ()=>{
+            if(cb.value==="ALL"){
+                dateList.querySelectorAll('input:not([value="ALL"])')
+                    .forEach(x=>x.checked=cb.checked);
+            }
+            updateDateText();
+            applyFilter();
+        };
+    });
+}
+
 /* ===== EXTRACT ===== */
 function extractImages(html){
     if(!html) return [];
@@ -472,13 +553,33 @@ function renderDefects(rows){
 /* ===== FILTER ===== */
 function applyFilter(){
     let rows = [...defectRows];
-    const mgrs = getSelected(managerList);
-    const aas = getSelected(associateList);
 
-    if(mgrs.length) rows = rows.filter(r => mgrs.includes(r[COL_MANAGER]));
-    if(aas.length) rows = rows.filter(r => aas.includes(r[COL_AA]));
+    const selectedManagers = getSelectedManagers();
+    const selectedAAs = getSelectedAAs();
+    const selectedDates = getSelectedDates();
+
+    if(selectedManagers.length){
+        rows = rows.filter(r =>
+            selectedManagers.includes(r["Manager"])
+        );
+    }
+
+    if(selectedAAs.length){
+        rows = rows.filter(r =>
+            selectedAAs.includes(r["Associate 1"])
+        );
+    }
+
+    if(selectedDates.length){
+        rows = rows.filter(r =>
+            selectedDates.includes(excelDateToJSDate(r[COL_DATE]))
+
+        );
+    }
 
     renderDefects(rows);
+loadDates(rows);
+
 }
 
 /* ===== DROPDOWN TOGGLE ===== */
@@ -486,10 +587,15 @@ managerBtn.onclick = () =>
     managerList.style.display = managerList.style.display === "block" ? "none" : "block";
 associateBtn.onclick = () =>
     associateList.style.display = associateList.style.display === "block" ? "none" : "block";
+dateBtn.onclick = () =>
+    dateList.style.display =
+        dateList.style.display === "block" ? "none" : "block";
 
-document.addEventListener("click", e => {
-    if(!managerBox.contains(e.target)) managerList.style.display = "none";
-    if(!associateBox.contains(e.target)) associateList.style.display = "none";
+
+document.addEventListener("click",e=>{
+    if(!managerBox.contains(e.target)) managerList.style.display="none";
+    if(!associateBox.contains(e.target)) associateList.style.display="none";
+    if(!dateBox.contains(e.target)) dateList.style.display="none";
 });
 
 function goBack(){
