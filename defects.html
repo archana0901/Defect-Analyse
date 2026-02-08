@@ -6,7 +6,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
-/* ========== GLOBAL ========== */
 body{
     margin:0;
     font-family:"Segoe UI",Arial,sans-serif;
@@ -17,19 +16,16 @@ body{
     min-height:100vh;
     padding:30px;
     color:#0f172a;
+    overflow-x:hidden;
 }
 
-/* ========== HEADER ========== */
 .header{
     display:flex;
     justify-content:space-between;
     align-items:center;
     margin-bottom:25px;
 }
-.header h1{
-    font-size:28px;
-    font-weight:800;
-}
+
 .back-btn{
     padding:10px 18px;
     border-radius:999px;
@@ -40,10 +36,9 @@ body{
     cursor:pointer;
 }
 
-/* ========== FILTER BAR ========== */
 .filter-bar{
     display:flex;
-    gap:24px;
+    gap:25px;
     flex-wrap:wrap;
     background:rgba(255,255,255,.6);
     backdrop-filter:blur(12px);
@@ -52,231 +47,158 @@ body{
     box-shadow:0 12px 30px rgba(0,0,0,.15);
     margin-bottom:30px;
 }
-.filter-group{
+
+.filter-group,.dropdown{
     display:flex;
     flex-direction:column;
-    gap:6px;
-}
-.filter-group label{
-    font-weight:700;
-    font-size:14px;
-}
-.filter-group select{
-    min-width:240px;
-    padding:10px 14px;
-    border-radius:14px;
-    border:1px solid #c7d2fe;
-    background:#fff;
-    font-size:14px;
-    cursor:pointer;
-}
-
-/* ========== DEFECT LIST ========== */
-.defect-list{
-    display:flex;
-    flex-direction:column;
-    gap:18px;
-overflow-x: hidden;
-word-break: break-word;
-}
-.defect-item{
-    background:#fff;
-    border-radius:20px;
-    padding:20px 22px;
-    box-shadow:0 12px 28px rgba(0,0,0,.12);
-}
-.defect-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:8px;
-
-}
-.asin{
-    font-weight:800;
-    font-size:15px;
-}
-.badge{
-    background:#22c55e;
-    color:#fff;
-    padding:4px 10px;
-    border-radius:999px;
-    font-size:11px;
-    font-weight:700;
-}
-.meta{
-    font-size:13px;
-    margin:6px 0;
-}
-.meta a{
-    color:#4f46e5;
-    font-weight:600;
-    text-decoration:none;
-
-}
-
-/* ========== IMAGES ========== */
-.image-grid{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:10px;
-}
-.image-grid img{
-    width:120px;
-    height:120px;
-    object-fit:cover;
-    border-radius:14px;
-    border:1px solid #e5e7eb;
-    cursor:pointer;
-    transition:.25s;
-}
-.image-grid img:hover{
-    transform:scale(1.05);
-}
-
-/* ========== EMPTY STATE ========== */
-.empty{
-    text-align:center;
-    padding:60px;
-    font-weight:700;
-    color:#64748b;
-}
-
-.dropdown{position:relative;min-width:260px;}
-.dropdown-btn{
-    padding:12px 18px;
-    border-radius:999px;
-    border:1px solid #c7d2fe;
-    background:#fff;
-    cursor:pointer;
-    font-weight:600;
-}
-.dropdown-content{
-    display:none;
-    position:absolute;
-    top:120%;
-    left:0;
-    width:100%;
-    max-height:240px;
-    overflow-y:auto;
-    background:#fff;
-    border-radius:14px;
-    padding:10px;
-    box-shadow:0 10px 30px rgba(0,0,0,.15);
-    z-index:50;
-}
-.dropdown-content label{
-    display:flex;
     gap:8px;
-    padding:6px 4px;
-    cursor:pointer;
-    font-size:13px;
+    position:relative;
 }
 
-/* ===== FILTER BAR ALIGNMENT FIX ===== */
-.filter-bar{
-    display:flex;
-    align-items:flex-start;
-    gap:40px;
-    flex-wrap:nowrap;          
-    overflow-x:auto;           
-}
-
-
-/* All groups same vertical structure */
-.filter-group,
-.dropdown{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-}
-
-/* Label alignment */
-.filter-label{
-    font-weight:700;
-    font-size:14px;
-    margin-left:6px;
-}
-
-/* Upload group height balance */
-.upload-group{
-   min-width:180px;
-}
-
-/* Button & dropdown same height */
-.upload-btn{height:20px;
-    display:flex;
-    align-items:center;
-    padding:0 18px;
-    border-radius:999px;
-    font-size:14px;
-}
 .dropdown-btn{
     height:40px;
     display:flex;
     align-items:center;
-    padding:0 10px;
+    padding:0 18px;
     border-radius:999px;
-    font-size:14px;
+    border:1px solid #c7d2fe;
+    background:#fff;
+    cursor:pointer;
+    font-weight:600;
+    min-width:220px;
 }
 
-/* Dropdown button width */
-.dropdown-btn{
-    min-width:260px;
-}
-
-/* File name spacing */
-.file-name{
-    font-size:12px;
-    color:#64748b;
-    margin-left:10px;
+.dropdown-content{
+    display:none;
+    position:absolute;
+    top:65px;
+    background:#fff;
+    max-height:250px;
+    overflow-y:auto;
+    border-radius:14px;
+    padding:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,.15);
+    z-index:50;
+    width:220px;
 }
 
 .dropdown-content label{
-    display:flex;
-    gap:10px;
-    padding:8px 6px;
-    cursor:pointer;
-}
-
-/* ===== UPLOAD BUTTON ===== */
-.upload-group{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
+    display:block;
+    margin-bottom:6px;
 }
 
 .upload-btn{
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    gap:8px;
-    padding:12px 22px;
+    padding:12px 20px;
     border-radius:999px;
     background:linear-gradient(135deg,#6366f1,#22d3ee);
     color:#fff;
     font-weight:700;
-    font-size:14px;
     cursor:pointer;
-    box-shadow:0 12px 30px rgba(99,102,241,.35);
-    transition:all .25s ease;
-    width:max-content;
 }
 
-.upload-btn:hover{
-    transform:translateY(-2px);
-    box-shadow:0 16px 36px rgba(99,102,241,.45);
+#fileName{
+    font-size:13px;
+    margin-top:8px;
+    max-width:220px;
+    word-break:break-word;
+
 }
 
-.upload-btn:active{
-    transform:scale(.97);
+.review-toggle-container{
+    margin-bottom:20px;
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
 }
 
-.file-name{
+.review-btn{
+    padding:10px 20px;
+    border-radius:999px;
+    border:none;
+    font-weight:700;
+    cursor:pointer;
+    color:#fff;
+}
+
+.unreviewed-btn{background:linear-gradient(135deg,#f97316,#ec4899);}
+.reviewed-btn{background:linear-gradient(135deg,#16a34a,#22c55e);}
+.disputed-btn{background:linear-gradient(135deg,#dc2626,#ef4444);}
+
+.defect-list{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+
+}
+
+.defect-item{
+    background:#fff;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 12px 28px rgba(0,0,0,.12);
+    overflow: hidden;
+    word-break:break-word;
     font-size:12px;
-    color:#475569;
-    margin-left:10px;
+}
+
+.reviewed-card{
+    background:linear-gradient(135deg,#dcfce7,#bbf7d0);
+    border:1px solid #22c55e;
+}
+
+.disputed-badge{
+    background:#ef4444;
+    color:#fff;
+    padding:6px 14px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.reviewed-badge{
+    background:#22c55e;
+    color:#fff;
+    padding:6px 14px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.mark-btn{
+    background:#6366f1;
+    color:#fff;
+    border:none;
+    padding:6px 14px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.image-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:10px;
+}
+
+.image-grid img{
+    width:120px;
+    height:120px;
+    object-fit:cover;
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    cursor:pointer;
+}
+
+.disputed-card{
+    background:linear-gradient(135deg,#fef9c3,#fde68a);
+    border:1px solid #facc15;
 }
 
 </style>
@@ -285,324 +207,299 @@ word-break: break-word;
 <body>
 
 <div class="header">
-    <h1>AA-wise Defect Details</h1>
-    <button class="back-btn" onclick="goBack()">← Back</button>
+<h1>AA-wise Defect Details</h1>
+<button class="back-btn" onclick="history.back()">← Back</button>
 </div>
 
-<!-- FILTER BAR -->
 <div class="filter-bar">
-<div class="filter-group upload-group">
-    <label class="filter-label">Upload Excel</label>
 
-    <label class="upload-btn">
-        📊 Choose Excel File
-        <input type="file" id="upload" accept=".xlsx,.xls" hidden>
-    </label>
-
-    <div class="file-name" id="fileName">No file selected</div>
+<div class="filter-group">
+<label>Upload Excel</label>
+<label class="upload-btn">
+📊 Choose Excel File
+<input type="file" id="upload" hidden>
+</label>
+<div id="fileName">No file selected</div>
 </div>
 
+<div class="dropdown">
+<label>Managers</label>
+<div class="dropdown-btn" id="managerBtn">Select Managers</div>
+<div class="dropdown-content" id="managerList"></div>
+</div>
 
-    <div class="dropdown" id="managerBox">
-        <label class="filter-label">Managers</label>
-        <div class="dropdown-btn" id="managerBtn">Select Managers</div>
-        <div class="dropdown-content" id="managerList"></div>
-    </div>
+<div class="dropdown">
+<label>Associates</label>
+<div class="dropdown-btn" id="associateBtn">Select Associates</div>
+<div class="dropdown-content" id="associateList"></div>
+</div>
 
-   <div class="dropdown" id="associateBox">
-<label class="filter-label">Associates</label>
-        <div class="dropdown-btn" id="associateBtn">Select Associates</div>
-        <div class="dropdown-content" id="associateList"></div>
-    </div>
-<div class="dropdown" id="dateBox">
-    <label class="filter-label">Job Review Date</label>
-    <div class="dropdown-btn" id="dateBtn">Select Dates</div>
-    <div class="dropdown-content" id="dateList"></div>
+<div class="dropdown">
+<label>Job Review Date</label>
+<div class="dropdown-btn" id="dateBtn">Select Dates</div>
+<div class="dropdown-content" id="dateList"></div>
 </div>
 
 </div>
 
-<!-- DEFECT LIST -->
+<div class="review-toggle-container">
+<button id="toggleUnreviewedBtn" class="review-btn unreviewed-btn">Show Only Unreviewed</button>
+<button id="toggleReviewedBtn" class="review-btn reviewed-btn">Show Only Reviewed</button>
+<button id="toggleDisputedBtn" class="review-btn disputed-btn">Show Only Disputed</button>
+</div>
+
 <div id="defectContainer" class="defect-list"></div>
+
 <script>
-/* ===== COLUMN NAMES ===== */
-const COL_MANAGER = "Manager";
-const COL_AA = "Associate 1";
-const COL_INCORRECT = "Incorrect";
-const COL_MISSED = "Missed";
-const COL_REASON = "Auditor Reason Code";
-const COL_RETAIL = "Retail Page URL";
-const COL_HTML = "HTML CODE";
-const COL_ASIN = "ASIN";
+const COL_MANAGER="Manager";
+const COL_AA="Associate 1";
+const COL_DATE="Job Review Date";
+const COL_ASIN="ASIN";
+const COL_HTML="HTML CODE";
+const COL_RETAIL="Retail Page URL";
+const COL_INCORRECT="Incorrect";
+const COL_MISSED="Missed";
+const COL_REASON="Auditor Reason Code";
 
-/* ===== DOM ===== */
-const upload = document.getElementById("upload");
-const managerList = document.getElementById("managerList");
-const managerBtn = document.getElementById("managerBtn");
-const managerBox = document.getElementById("managerBox");
-const associateList = document.getElementById("associateList");
-const associateBtn = document.getElementById("associateBtn");
-const associateBox = document.getElementById("associateBox");
-const defectContainer = document.getElementById("defectContainer");
-const COL_DATE = "Job Review Date";
+let defectRows=[];
+let showOnlyUnreviewed=false;
+let showOnlyReviewed=false;
+let showOnlyDisputed=false;
 
-const dateList = document.getElementById("dateList");
-const dateBtn = document.getElementById("dateBtn");
-const dateBox = document.getElementById("dateBox");
+let reviewedDefects=JSON.parse(localStorage.getItem("reviewedDefects")||"{}");
+let disputedDefects=JSON.parse(localStorage.getItem("disputedDefects")||"{}");
 
+function saveData(){
+localStorage.setItem("reviewedDefects",JSON.stringify(reviewedDefects));
+localStorage.setItem("disputedDefects",JSON.stringify(disputedDefects));
+}
 
-/* ===== DATA ===== */
-let defectRows = [];
+function getKey(asin,aa){return aa+"__"+asin;}
 
-/* ===== UPLOAD EXCEL ===== */
-upload.onchange = e => {
-const fileName = document.getElementById("fileName");
-fileName.innerText = upload.files[0]?.name || "No file selected";
+const upload=document.getElementById("upload");
+const managerList=document.getElementById("managerList");
+const associateList=document.getElementById("associateList");
+const dateList=document.getElementById("dateList");
+const managerBtn=document.getElementById("managerBtn");
+const associateBtn=document.getElementById("associateBtn");
+const dateBtn=document.getElementById("dateBtn");
+const defectContainer=document.getElementById("defectContainer");
 
-    const reader = new FileReader();
-    reader.onload = ev => {
-        const wb = XLSX.read(new Uint8Array(ev.target.result), { type: "array" });
-        defectRows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        loadManagers();
-        loadAssociates();
-        loadDates();
-        renderDefects(defectRows);
-    };
-    reader.readAsArrayBuffer(e.target.files[0]);
+upload.onchange=e=>{
+document.getElementById("fileName").innerText=upload.files[0]?.name||"No file selected";
+const reader=new FileReader();
+reader.onload=ev=>{
+const wb=XLSX.read(new Uint8Array(ev.target.result),{type:"array"});
+defectRows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+loadManagers();
+loadAssociates();
+loadDates();
+applyFilter();
+};
+reader.readAsArrayBuffer(e.target.files[0]);
 };
 
-/* ===== DROPDOWN HELPERS ===== */
-function handleAll(box){
-    const all = box.querySelector('input[value="ALL"]');
-    box.querySelectorAll('input:not([value="ALL"])')
-        .forEach(i => i.checked = all.checked);
-}
-function getSelected(box){
-    return [...box.querySelectorAll("input:checked")]
-        .map(i => i.value)
-        .filter(v => v !== "ALL");
-}
-
-/* ===== MANAGERS ===== */
-function loadManagers(){
-    managerList.innerHTML = `<label><input type="checkbox" value="ALL"> <b>All Managers</b></label>`;
-    [...new Set(defectRows.map(r => r[COL_MANAGER]).filter(Boolean))]
-        .forEach(m => {
-            managerList.innerHTML += `<label><input type="checkbox" value="${m}"> ${m}</label>`;
-        });
-
-    managerList.querySelectorAll("input").forEach(cb => {
-       cb.onchange = () => {
-    if(cb.value === "ALL") handleAll(managerList);
-    updateManagerText();
-    loadAssociates();   
-    applyFilter();
+function toggle(btn,list){
+btn.onclick=e=>{
+e.stopPropagation();
+list.style.display=list.style.display==="block"?"none":"block";
 };
-
-    });
 }
-function updateManagerText(){
-    const c = getSelected(managerList).length;
-    managerBtn.innerText = c ? `${c} Selected` : "Select Managers";
-}
+toggle(managerBtn,managerList);
+toggle(associateBtn,associateList);
+toggle(dateBtn,dateList);
 
-/* ===== ASSOCIATES ===== */
-function loadAssociates(){
-    associateList.innerHTML =
-        `<label><input type="checkbox" value="ALL"> <b>All Associates</b></label>`;
-
-    const selectedManagers = getSelected(managerList);
-
-    // filter rows based on selected managers
-    const filteredRows = selectedManagers.length
-        ? defectRows.filter(r => selectedManagers.includes(r[COL_MANAGER]))
-        : defectRows;
-
-    [...new Set(filteredRows.map(r => r[COL_AA]).filter(Boolean))]
-        .forEach(a => {
-            associateList.innerHTML += `
-                <label>
-                    <input type="checkbox" value="${a}"> ${a}
-                </label>`;
-        });
-
-    associateList.querySelectorAll("input").forEach(cb => {
-        cb.onchange = () => {
-            if(cb.value === "ALL") handleAll(associateList);
-            updateAssociateText();
-            applyFilter();
-        };
-    });
-
-    updateAssociateText();
-}
-function updateAssociateText(){
-    const c = getSelected(associateList).length;
-    associateBtn.innerText = c ? `${c} Selected` : "Select Associates";
-}
-
-function excelDateToJSDate(serial){
-    if(typeof serial === "number"){
-        const utc_days  = Math.floor(serial - 25569);
-        const utc_value = utc_days * 86400;                                        
-        const date_info = new Date(utc_value * 1000);
-        return date_info.toISOString().split("T")[0];
-    }
-    return serial;
-}
-
-function getSelectedManagers(){
-    return getSelected(managerList);
-}
-
-function getSelectedAAs(){
-    return getSelected(associateList);
-}
-
-function getSelectedDates(){
-    return getSelected(dateList);
-}
-
-function updateDateText(){
-    const c = getSelectedDates().length;
-    dateBtn.innerText = c ? `${c} Selected` : "Select Dates";
-}
-
-
-function loadDates(filteredRows = defectRows){
-    dateList.innerHTML = `
-        <label><input type="checkbox" value="ALL"> <b>All Dates</b></label>
-    `;
-
-    const uniqueDates = [
-        ...new Set(
-            filteredRows
-                .map(r => excelDateToJSDate(r[COL_DATE]))
-                .filter(Boolean)
-        )
-    ];
-
-    uniqueDates.sort((a,b)=> new Date(b) - new Date(a)); // newest first
-
-    uniqueDates.forEach(d => {
-        dateList.innerHTML += `
-            <label>
-                <input type="checkbox" value="${d}"> ${d}
-            </label>
-        `;
-    });
-
-    dateList.querySelectorAll("input").forEach(cb=>{
-        cb.onchange = ()=>{
-            if(cb.value==="ALL"){
-                dateList.querySelectorAll('input:not([value="ALL"])')
-                    .forEach(x=>x.checked=cb.checked);
-            }
-            updateDateText();
-            applyFilter();
-        };
-    });
-}
-
-/* ===== EXTRACT ===== */
-function extractImages(html){
-    if(!html) return [];
-    const m = html.match(/<img[^>]+src=["']([^"']+)["']/gi);
-    return m ? m.map(x => x.match(/src=["']([^"']+)["']/i)[1]) : [];
-}
-function extractDispute(html){
-    const m = html?.match(/https:\/\/share\.amazon\.com\/[^\s"'<>]+/i);
-    return m ? m[0] : null;
-}
-
-/* ===== RENDER ===== */
-function renderDefects(rows){
-    if(!rows.length){
-        defectContainer.innerHTML = `<div class="empty">No defects found</div>`;
-        return;
-    }
-
-    defectContainer.innerHTML = rows.map(r => {
-        const images = extractImages(r[COL_HTML]);
-        const dispute = extractDispute(r[COL_HTML]);
-
-        return `
-        <div class="defect-item">
-            <div class="defect-header">
-                <div class="asin">${r[COL_ASIN] || "N/A"}</div>
-                <span class="badge">${r[COL_AA]}</span>
-            </div>
-
-            <div class="meta">
-                <b>Manager:</b> ${r[COL_MANAGER] || "N/A"}<br>
-                <b>Incorrect:</b> ${r[COL_INCORRECT] || "N/A"}<br>
-                <b>Missed:</b> ${r[COL_MISSED] || "N/A"}<br>
-                <b>Reason:</b> ${r[COL_REASON] || "N/A"}<br>
-                ${r[COL_RETAIL] ? `<a href="${r[COL_RETAIL]}" target="_blank">Retail Page ↗</a>` : ""}
-                ${dispute ? ` | <a href="${dispute}" target="_blank" style="color:#dc2626;font-weight:700">Dispute ↗</a>` : ""}
-            </div>
-
-            ${images.length ? `
-            <div class="image-grid">
-                ${images.map(i => `<img src="${i}" onclick="window.open('${i}')">`).join("")}
-            </div>` : ""}
-        </div>`;
-    }).join("");
-}
-
-/* ===== FILTER ===== */
-function applyFilter(){
-    let rows = [...defectRows];
-
-    const selectedManagers = getSelectedManagers();
-    const selectedAAs = getSelectedAAs();
-    const selectedDates = getSelectedDates();
-
-    if(selectedManagers.length){
-        rows = rows.filter(r =>
-            selectedManagers.includes(r["Manager"])
-        );
-    }
-
-    if(selectedAAs.length){
-        rows = rows.filter(r =>
-            selectedAAs.includes(r["Associate 1"])
-        );
-    }
-
-    if(selectedDates.length){
-        rows = rows.filter(r =>
-            selectedDates.includes(excelDateToJSDate(r[COL_DATE]))
-
-        );
-    }
-
-    renderDefects(rows);
-loadDates(rows);
-
-}
-
-/* ===== DROPDOWN TOGGLE ===== */
-managerBtn.onclick = () =>
-    managerList.style.display = managerList.style.display === "block" ? "none" : "block";
-associateBtn.onclick = () =>
-    associateList.style.display = associateList.style.display === "block" ? "none" : "block";
-dateBtn.onclick = () =>
-    dateList.style.display =
-        dateList.style.display === "block" ? "none" : "block";
-
-
-document.addEventListener("click",e=>{
-    if(!managerBox.contains(e.target)) managerList.style.display="none";
-    if(!associateBox.contains(e.target)) associateList.style.display="none";
-    if(!dateBox.contains(e.target)) dateList.style.display="none";
+document.addEventListener("click",()=>{
+managerList.style.display="none";
+associateList.style.display="none";
+dateList.style.display="none";
 });
 
-function goBack(){
-    window.history.back();
+function excelDate(serial){
+if(typeof serial==="number"){
+const utc_days=Math.floor(serial-25569);
+return new Date(utc_days*86400*1000).toISOString().split("T")[0];
+}
+return serial;
+}
+
+function addSelectAll(container){
+const selectAll=document.createElement("label");
+selectAll.innerHTML=`<input type="checkbox" value="__ALL__"> <b>Select All</b>`;
+container.prepend(selectAll);
+
+selectAll.querySelector("input").onchange=function(){
+container.querySelectorAll("input:not([value='__ALL__'])")
+.forEach(cb=>cb.checked=this.checked);
+updateButton(container);
+applyFilter();
+};
+}
+
+function getSelected(container){
+return [...container.querySelectorAll("input:checked")]
+.map(i=>i.value).filter(v=>v!=="__ALL__");
+}
+
+function updateButton(container){
+let btn;
+if(container===managerList) btn=managerBtn;
+if(container===associateList) btn=associateBtn;
+if(container===dateList) btn=dateBtn;
+
+const selected=getSelected(container);
+if(!selected.length) btn.innerText="Select";
+else if(selected.length<=2) btn.innerText=selected.join(", ");
+else btn.innerText=selected.length+" Selected";
+}
+
+function loadManagers(){
+managerList.innerHTML="";
+[...new Set(defectRows.map(r=>r[COL_MANAGER]).filter(Boolean))]
+.forEach(m=>managerList.innerHTML+=`<label><input type="checkbox" value="${m}"> ${m}</label>`);
+addSelectAll(managerList);
+managerList.querySelectorAll("input").forEach(cb=>cb.onchange=()=>{updateButton(managerList);loadAssociates();applyFilter();});
+}
+
+function loadAssociates(){
+associateList.innerHTML="";
+const mgr=getSelected(managerList);
+let rows=mgr.length?defectRows.filter(r=>mgr.includes(r[COL_MANAGER])):defectRows;
+[...new Set(rows.map(r=>r[COL_AA]).filter(Boolean))]
+.forEach(a=>associateList.innerHTML+=`<label><input type="checkbox" value="${a}"> ${a}</label>`);
+addSelectAll(associateList);
+associateList.querySelectorAll("input").forEach(cb=>cb.onchange=()=>{updateButton(associateList);applyFilter();});
+}
+
+function loadDates(){
+dateList.innerHTML="";
+[...new Set(defectRows.map(r=>excelDate(r[COL_DATE])).filter(Boolean))]
+.forEach(d=>dateList.innerHTML+=`<label><input type="checkbox" value="${d}"> ${d}</label>`);
+addSelectAll(dateList);
+dateList.querySelectorAll("input").forEach(cb=>cb.onchange=()=>{updateButton(dateList);applyFilter();});
+}
+
+function applyFilter(){
+let rows=[...defectRows];
+const mgr=getSelected(managerList);
+const aa=getSelected(associateList);
+const dt=getSelected(dateList);
+
+if(mgr.length) rows=rows.filter(r=>mgr.includes(r[COL_MANAGER]));
+if(aa.length) rows=rows.filter(r=>aa.includes(r[COL_AA]));
+if(dt.length) rows=rows.filter(r=>dt.includes(excelDate(r[COL_DATE])));
+
+if(showOnlyUnreviewed) rows=rows.filter(r=>!reviewedDefects[getKey(r[COL_ASIN],r[COL_AA])]);
+if(showOnlyReviewed) rows=rows.filter(r=>reviewedDefects[getKey(r[COL_ASIN],r[COL_AA])]);
+if(showOnlyDisputed) rows=rows.filter(r=>disputedDefects[getKey(r[COL_ASIN],r[COL_AA])]);
+
+renderDefects(rows);
+}
+
+document.getElementById("toggleUnreviewedBtn").onclick=function(){
+showOnlyUnreviewed=!showOnlyUnreviewed;
+showOnlyReviewed=false;showOnlyDisputed=false;applyFilter();};
+
+document.getElementById("toggleReviewedBtn").onclick=function(){
+showOnlyReviewed=!showOnlyReviewed;
+showOnlyUnreviewed=false;showOnlyDisputed=false;applyFilter();};
+
+document.getElementById("toggleDisputedBtn").onclick=function(){
+showOnlyDisputed=!showOnlyDisputed;
+showOnlyUnreviewed=false;showOnlyReviewed=false;applyFilter();};
+
+function markReviewed(asin,aa){
+const key=getKey(asin,aa);
+reviewedDefects[key]?delete reviewedDefects[key]:reviewedDefects[key]=true;
+saveData();applyFilter();
+}
+
+function markDisputed(asin,aa){
+const key=getKey(asin,aa);
+disputedDefects[key]?delete disputedDefects[key]:disputedDefects[key]=true;
+saveData();applyFilter();
+}
+
+function extractImages(html){
+if(!html) return [];
+const matches=html.match(/<img[^>]+src=["']([^"']+)["']/gi);
+return matches?matches.map(x=>x.match(/src=["']([^"']+)["']/i)[1]):[];
+}
+
+function extractDispute(html){
+const m=html?.match(/https:\/\/share\.amazon\.com\/[^\s"'<>]+/i);
+return m?m[0]:null;
+}
+
+function renderDefects(rows){
+if(!rows.length){defectContainer.innerHTML="<div>No defects found</div>";return;}
+defectContainer.innerHTML=rows.map(r=>{
+const key=getKey(r[COL_ASIN],r[COL_AA]);
+const isReviewed=reviewedDefects[key];
+const isDisputed=disputedDefects[key];
+const images=extractImages(r[COL_HTML]);
+const dispute=extractDispute(r[COL_HTML]);
+
+return `
+<div class="defect-item 
+${isDisputed ? 'disputed-card' : isReviewed ? 'reviewed-card' : ''}">
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+
+<div style="font-weight:700;">
+${r[COL_ASIN] || ""}
+</div>
+
+<div style="display:flex;gap:8px;">
+
+${isReviewed
+? `<span class="reviewed-badge"
+    onclick="markReviewed('${r[COL_ASIN]}','${r[COL_AA]}')">
+    Reviewed
+   </span>`
+: `<button class="mark-btn"
+    onclick="markReviewed('${r[COL_ASIN]}','${r[COL_AA]}')">
+    Mark Reviewed
+   </button>`
+}
+
+${isDisputed
+? `<span class="disputed-badge"
+    onclick="markDisputed('${r[COL_ASIN]}','${r[COL_AA]}')">
+    Disputed
+   </span>`
+: `<button class="mark-btn"
+    style="background:#ef4444;"
+    onclick="markDisputed('${r[COL_ASIN]}','${r[COL_AA]}')">
+    Mark Disputable
+   </button>`
+}
+
+</div>
+</div>
+
+
+<b>Manager:</b> ${r[COL_MANAGER]||"N/A"}<br>
+<b>Associate:</b> ${r[COL_AA]||"N/A"}<br>
+<b>Date:</b> ${excelDate(r[COL_DATE])||"N/A"}<br>
+<b>Incorrect:</b> ${r[COL_INCORRECT]||"N/A"}<br>
+<b>Missed:</b> ${r[COL_MISSED]||"N/A"}<br>
+<b>Reason:</b> ${r[COL_REASON]||"N/A"}<br>
+
+${r[COL_RETAIL]?`<a href="${r[COL_RETAIL]}" target="_blank"><b>Retail ↗</b></a>`:""}
+${dispute?` | <a href="${dispute}" target="_blank" style="color:red;font-weight:bold;">Dispute ↗</a>`:""}
+
+${images.length?`
+<div class="image-grid">
+${images.map(i=>`<img src="${i}" onclick="window.open('${i}')">`).join("")}
+</div>`:""}
+</div>
+`;
+}).join("");
+}
+function goHome(){
+    window.location.href = "index.html";  
 }
 </script>
-
-
 </body>
 </html>
