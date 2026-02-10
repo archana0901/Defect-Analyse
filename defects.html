@@ -432,10 +432,31 @@ disputedDefects[key]?delete disputedDefects[key]:disputedDefects[key]=true;
 saveData();applyFilter();
 }
 
-function extractImages(html){
-if(!html) return [];
-const matches=html.match(/<img[^>]+src=["']([^"']+)["']/gi);
-return matches?matches.map(x=>x.match(/src=["']([^"']+)["']/i)[1]):[];
+function extractImages(row){
+    let urls = [];
+
+    // 1️⃣ Extract from HTML column
+    if(row[COL_HTML]){
+        const matches = row[COL_HTML].match(/<img[^>]+src=["']([^"']+)["']/gi);
+        if(matches){
+            matches.forEach(m => {
+                const srcMatch = m.match(/src=["']([^"']+)["']/i);
+                if(srcMatch) urls.push(srcMatch[1]);
+            });
+        }
+    }
+
+    // 2️⃣ Extract from ANY column that contains http/https
+    Object.keys(row).forEach(key => {
+        const value = row[key];
+
+        if(typeof value === "string" && value.trim().startsWith("http")){
+            urls.push(value.trim());
+        }
+    });
+
+    // Remove duplicates
+    return [...new Set(urls)];
 }
 
 function extractDispute(html){
@@ -449,7 +470,8 @@ defectContainer.innerHTML=rows.map(r=>{
 const key=getKey(r[COL_ASIN],r[COL_AA]);
 const isReviewed=reviewedDefects[key];
 const isDisputed=disputedDefects[key];
-const images=extractImages(r[COL_HTML]);
+const images=extractImages(r);
+
 const dispute=extractDispute(r[COL_HTML]);
 
 return `
@@ -503,7 +525,10 @@ ${dispute?` | <a href="${dispute}" target="_blank" style="color:red;font-weight:
 
 ${images.length?`
 <div class="image-grid">
-${images.map(i=>`<img src="${i}" onclick="window.open('${i}')">`).join("")}
+${images.map(i=>`<img src="${i}" 
+     onerror="this.style.display='none'" 
+     onclick="window.open('${i}')">
+`).join("")}
 </div>`:""}
 </div>
 `;
