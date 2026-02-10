@@ -110,6 +110,14 @@ body{
 .review-toggle-container{
     margin-bottom:20px;
     display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+}
+
+.left-buttons{
+    display:flex;
     gap:16px;
     flex-wrap:wrap;
 }
@@ -201,6 +209,45 @@ body{
     border:1px solid #facc15;
 }
 
+.download-btn{
+    padding:12px 24px;
+    border:none;
+    border-radius:40px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    background:linear-gradient(135deg,#8b5cf6,#06b6d4);
+    color:#fff;
+    box-shadow:0 8px 20px rgba(0,0,0,.25);
+    transition:all .3s ease;
+    position:relative;
+    overflow:hidden;
+}
+
+.download-btn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 15px 30px rgba(0,0,0,.35);
+}
+
+.download-btn:active{
+    transform:scale(.96);
+}
+
+.download-btn::after{
+    content:"";
+    position:absolute;
+    top:0;
+    left:-100%;
+    width:100%;
+    height:100%;
+    background:linear-gradient(120deg,transparent,rgba(255,255,255,.4),transparent);
+    transition:all .6s;
+}
+
+.download-btn:hover::after{
+    left:100%;
+}
+
 </style>
 </head>
 
@@ -243,10 +290,27 @@ body{
 </div>
 
 <div class="review-toggle-container">
-<button id="toggleUnreviewedBtn" class="review-btn unreviewed-btn">Show Only Unreviewed</button>
-<button id="toggleReviewedBtn" class="review-btn reviewed-btn">Show Only Reviewed</button>
-<button id="toggleDisputedBtn" class="review-btn disputed-btn">Show Only Disputed</button>
+
+    <div class="left-buttons">
+        <button id="toggleUnreviewedBtn" class="review-btn unreviewed-btn">
+            Show Only Unreviewed
+        </button>
+
+        <button id="toggleReviewedBtn" class="review-btn reviewed-btn">
+            Show Only Reviewed
+        </button>
+
+        <button id="toggleDisputedBtn" class="review-btn disputed-btn">
+            Show Only Disputed (0)
+        </button>
+    </div>
+
+    <button id="downloadDisputedBtn" class="download-btn">
+        ⬇ Export Disputed Defects
+    </button>
+
 </div>
+
 
 <div id="defectContainer" class="defect-list"></div>
 
@@ -429,7 +493,10 @@ saveData();applyFilter();
 function markDisputed(asin,aa){
 const key=getKey(asin,aa);
 disputedDefects[key]?delete disputedDefects[key]:disputedDefects[key]=true;
-saveData();applyFilter();
+saveData();
+
+applyFilter();
+updateDisputedCount(); 
 }
 
 function extractImages(row){
@@ -537,6 +604,72 @@ ${images.map(i=>`<img src="${i}"
 function goHome(){
     window.location.href = "index.html";  
 }
+
+document.getElementById("downloadDisputedBtn").onclick = function(){
+
+    // Filter only disputed rows
+    const disputedRows = defectRows.filter(r =>
+        disputedDefects[getKey(r[COL_ASIN], r[COL_AA])]
+    );
+
+    if(!disputedRows.length){
+        alert("No disputed defects found!");
+        return;
+    }
+
+    // Add count column
+    const finalData = disputedRows.map(r => ({
+        Manager: r[COL_MANAGER],
+        Associate: r[COL_AA],
+        ASIN: r[COL_ASIN],
+        Date: excelDate(r[COL_DATE]),
+        Incorrect: r[COL_INCORRECT],
+        Missed: r[COL_MISSED],
+        Reason: r[COL_REASON],
+        "Disputed Status": "Yes"
+    }));
+
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(finalData);
+
+    // Add total count at bottom
+    const totalRow = {
+        Manager: "",
+        Associate: "",
+        ASIN: "",
+        Date: "",
+        Incorrect: "",
+        Missed: "",
+        Reason: "",
+        "Disputed Status": "Total Disputed: " + disputedRows.length
+    };
+
+    XLSX.utils.sheet_add_json(ws, [totalRow], { skipHeader: true, origin: -1 });
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Disputed Defects");
+
+    // Download
+    XLSX.writeFile(wb, "Disputed_Defects.xlsx");
+};
+
+function updateDisputedCount(){
+
+    if(!defectRows.length){
+        document.getElementById("toggleDisputedBtn").innerText =
+            "Show Only Disputed (0)";
+        return;
+    }
+
+    const totalDisputed = defectRows.filter(r =>
+        disputedDefects[getKey(r[COL_ASIN], r[COL_AA])]
+    ).length;
+
+    document.getElementById("toggleDisputedBtn").innerText =
+        "Show Only Disputed (" + totalDisputed + ")";
+}
+
 </script>
 </body>
 </html>
