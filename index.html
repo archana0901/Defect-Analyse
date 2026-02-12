@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -312,6 +313,11 @@ background:#fff;
         <div class="dropdown-btn" id="dateBtn">Select Dates</div>
         <div class="dropdown-content" id="dateList"></div>
     </div>
+<div class="dropdown" id="packageBox" style="display:none">
+    <div class="dropdown-btn" id="packageBtn">Select Package Type</div>
+    <div class="dropdown-content" id="packageList"></div>
+</div>
+
 </div>
 
 <div class="container" id="chartSection" style="display:none">
@@ -340,6 +346,7 @@ const COL_MANAGER="Manager";
 const COL_AA="Associate 1";
 const COL_INCORRECT="Incorrect";
 const COL_DATE="Job Review Date";
+const COL_PACKAGE = "Package Type";   
 const COL_CATEGORY="Auditor Reason Code";
 const COL_ASIN="ASIN";
 const COL_RETAIL="Retail Page URL";
@@ -383,7 +390,7 @@ upload.onchange=e=>{
     r.onload=ev=>{
         const wb=XLSX.read(new Uint8Array(ev.target.result),{type:"array"});
         data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        loadManagers(); loadAssociates(); loadDates();
+        loadManagers(); loadAssociates(); loadDates(); loadPackages();
     };
     r.readAsArrayBuffer(e.target.files[0]);
 };
@@ -406,22 +413,58 @@ function loadManagers(){
 
 /* Associates */
 function loadAssociates(){
+
     dropdownBox.style.display="block";
-    associateList.innerHTML=`<label><input type="checkbox" value="ALL"> <b>All Associates</b></label>`;
-    const mgrs=getSelected(managerList);
-    const filtered=mgrs.length?data.filter(d=>mgrs.includes(d[COL_MANAGER])):data;
-    [...new Set(filtered.map(d=>d[COL_AA]).filter(Boolean))].forEach(a=>{
-        associateList.innerHTML+=`<label><input type="checkbox" value="${a}"> ${a}</label>`;
+
+    associateList.innerHTML = `
+        <label>
+            <input type="checkbox" value="ALL">
+            <b>All Associates</b>
+        </label>
+    `;
+
+    const mgrs = getSelected(managerList);
+    const packages = getSelected(packageList);
+
+    const filtered = data.filter(d => {
+
+        // Manager filter
+        if(mgrs.length && !mgrs.includes(d[COL_MANAGER]))
+            return false;
+
+        // Package Type filter
+        if(packages.length && !packages.includes(d[COL_PACKAGE]))
+            return false;
+
+        return true;
     });
+
+    const uniqueAssociates = [
+        ...new Set(filtered.map(d => d[COL_AA]).filter(Boolean))
+    ];
+
+    uniqueAssociates.forEach(a=>{
+        associateList.innerHTML += `
+            <label>
+                <input type="checkbox" value="${a}">
+                ${a}
+            </label>
+        `;
+    });
+
     associateList.querySelectorAll("input").forEach(cb=>{
-        cb.onchange=e=>{
-            e.target.value==="ALL"?handleAllToggle(associateList):syncAllFromChildren(associateList);
+        cb.onchange = e=>{
+            e.target.value==="ALL"
+                ? handleAllToggle(associateList)
+                : syncAllFromChildren(associateList);
+
             updateText(dropdownBtn,associateList,"Associates");
             aaExpanded=false;
             analyse();
         };
     });
 }
+
 
 /* Dates */
 function loadDates(){
@@ -440,6 +483,42 @@ function loadDates(){
     });
 }
 
+function loadPackages(){
+    packageBox.style.display = "block";
+
+    packageList.innerHTML = `
+        <label>
+            <input type="checkbox" value="ALL">
+            <b>All Package Types</b>
+        </label>
+    `;
+
+    const uniquePackages = [
+        ...new Set(data.map(d => d[COL_PACKAGE]).filter(Boolean))
+    ];
+
+    uniquePackages.forEach(p => {
+        packageList.innerHTML += `
+            <label>
+                <input type="checkbox" value="${p}">
+                ${p}
+            </label>
+        `;
+    });
+
+    packageList.querySelectorAll("input").forEach(cb => {
+        cb.onchange = e => {
+            e.target.value === "ALL"
+                ? handleAllToggle(packageList)
+                : syncAllFromChildren(packageList);
+
+            updateText(packageBtn, packageList, "Package Type");
+loadAssociates();
+            analyse();
+        };
+    });
+}
+
 /* Toggle selected AAs */
 function toggleMoreAAs(){
     aaExpanded=!aaExpanded;
@@ -450,18 +529,24 @@ function toggleMoreAAs(){
 function analyse(){
     const aas=getSelected(associateList);
     const dates=getSelected(dateList);
+const packages = getSelected(packageList);
+
     if(!aas.length) return;
 
-    const rows=data.filter(d=>{
-        
+    const rows = data.filter(d => {
 
-        if(!aas.includes(d[COL_AA])) return false;
-        if(dates.length){
-            const dt=parseExcelDate(d[COL_DATE]);
-            if(!dt||!dates.includes(formatDate(dt))) return false;
-        }
-        return true;
-    });
+    if(!aas.includes(d[COL_AA])) return false;
+
+    if(packages.length && !packages.includes(d[COL_PACKAGE])) return false;
+
+    if(dates.length){
+        const dt=parseExcelDate(d[COL_DATE]);
+        if(!dt || !dates.includes(formatDate(dt))) return false;
+    }
+
+    return true;
+});
+
 
 latestRows = rows;
     chartSection.style.display="block";
@@ -720,6 +805,16 @@ document.addEventListener("click",e=>{
     if(!dropdownBox.contains(e.target)) associateList.style.display="none";
     if(!dateBox.contains(e.target)) dateList.style.display="none";
 });
+
+packageBtn.onclick = () =>
+    packageList.style.display =
+        packageList.style.display === "block" ? "none" : "block";
+
+document.addEventListener("click", e => {
+    if(!packageBox.contains(e.target))
+        packageList.style.display = "none";
+});
+
 function goToDetailsPage(){
     window.location.href = "defects.html";
 }
