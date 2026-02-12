@@ -65,7 +65,7 @@ body{
     background:#fff;
     cursor:pointer;
     font-weight:600;
-    min-width:220px;
+    min-width:160px;
 }
 
 .dropdown-content{
@@ -286,6 +286,11 @@ body{
 <div class="dropdown-btn" id="dateBtn">Select Dates</div>
 <div class="dropdown-content" id="dateList"></div>
 </div>
+<div class="dropdown">
+<label>Package Type</label>
+<div class="dropdown-btn" id="packageBtn">Select Package Type</div>
+<div class="dropdown-content" id="packageList"></div>
+</div>
 
 </div>
 
@@ -318,6 +323,7 @@ body{
 const COL_MANAGER="Manager";
 const COL_AA="Associate 1";
 const COL_DATE="Job Review Date";
+const COL_PACKAGE = "Package Type";
 const COL_ASIN="ASIN";
 const COL_HTML="HTML CODE";
 const COL_RETAIL="Retail Page URL";
@@ -348,6 +354,9 @@ const managerBtn=document.getElementById("managerBtn");
 const associateBtn=document.getElementById("associateBtn");
 const dateBtn=document.getElementById("dateBtn");
 const defectContainer=document.getElementById("defectContainer");
+const packageList=document.getElementById("packageList");
+const packageBtn=document.getElementById("packageBtn");
+
 
 upload.onchange=e=>{
 document.getElementById("fileName").innerText=upload.files[0]?.name||"No file selected";
@@ -356,6 +365,7 @@ reader.onload=ev=>{
 const wb=XLSX.read(new Uint8Array(ev.target.result),{type:"array"});
 defectRows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
 loadManagers();
+loadPackages();
 loadAssociates();
 loadDates();
 applyFilter();
@@ -372,11 +382,15 @@ list.style.display=list.style.display==="block"?"none":"block";
 toggle(managerBtn,managerList);
 toggle(associateBtn,associateList);
 toggle(dateBtn,dateList);
+toggle(packageBtn,packageList);
+
 
 document.addEventListener("click",()=>{
 managerList.style.display="none";
 associateList.style.display="none";
 dateList.style.display="none";
+packageList.style.display="none";
+
 });
 
 function excelDate(serial){
@@ -387,57 +401,7 @@ return new Date(utc_days*86400*1000).toISOString().split("T")[0];
 return serial;
 }
 
-function addSelectAll(container){
 
-    // Create Select All checkbox
-    const wrapper = document.createElement("label");
-    wrapper.innerHTML =
-        `<input type="checkbox" value="__ALL__"> <b>Select All</b>`;
-    container.prepend(wrapper);
-
-    const selectAll = container.querySelector('input[value="__ALL__"]');
-
-    function getChildren(){
-        return container.querySelectorAll(
-            'input:not([value="__ALL__"])'
-        );
-    }
-
-    // When Select All clicked
-    selectAll.addEventListener("change", function(){
-
-        getChildren().forEach(cb => {
-            cb.checked = this.checked;
-        });
-
-        updateButton(container);
-        applyFilter();
-    });
-
-    // When any child clicked
-    container.querySelectorAll(
-        'input:not([value="__ALL__"])'
-    ).forEach(cb => {
-
-        cb.addEventListener("change", function(){
-
-            const total = getChildren().length;
-            const checked = [...getChildren()]
-                .filter(x => x.checked).length;
-
-            // Auto check/uncheck Select All
-            selectAll.checked = (total === checked);
-
-            updateButton(container);
-            applyFilter();
-        });
-
-    });
-
-    // Auto check Select All initially
-    selectAll.checked = true;
-    getChildren().forEach(cb => cb.checked = true);
-}
 
 function getSelected(container){
     return [...container.querySelectorAll("input:checked")]
@@ -458,52 +422,85 @@ else if(selected.length<=2) btn.innerText=selected.join(", ");
 else btn.innerText=selected.length+" Selected";
 }
 
+function handleAllToggle(box){
+    const all = box.querySelector('input[value="ALL"]');
+    [...box.querySelectorAll('input:not([value="ALL"])')]
+        .forEach(o => o.checked = all.checked);
+}
+
+function syncAllFromChildren(box){
+    const all = box.querySelector('input[value="ALL"]');
+    const others = [...box.querySelectorAll('input:not([value="ALL"])')];
+    all.checked = others.length && others.every(o => o.checked);
+}
+
+function getSelected(box){
+    return [...box.querySelectorAll('input:checked')]
+        .map(i => i.value)
+        .filter(v => v !== "ALL");
+}
+
+function updateText(btn,box,label){
+    const c = getSelected(box).length;
+    btn.innerText = c ? `${c} Selected` : `Select ${label}`;
+}
+
 function loadManagers(){
-    managerList.innerHTML = "";
+    managerList.innerHTML =
+        `<label><input type="checkbox" value="ALL"><b> All</b></label>`;
 
     [...new Set(defectRows.map(r => r[COL_MANAGER]).filter(Boolean))]
-    .forEach(m => {
-        managerList.innerHTML += 
-        `<label><input type="checkbox" value="${m}"> ${m}</label>`;
-    });
+        .forEach(m => {
+            managerList.innerHTML +=
+                `<label><input type="checkbox" value="${m}"> ${m}</label>`;
+        });
 
-    addSelectAll(managerList);
+    managerList.querySelectorAll("input").forEach(cb=>{
+        cb.onchange = e=>{
+            e.target.value==="ALL"
+                ? handleAllToggle(managerList)
+                : syncAllFromChildren(managerList);
 
-    managerList.querySelectorAll("input").forEach(cb => {
-        cb.onchange = () => {
-            updateButton(managerList);
+            updateText(managerBtn,managerList,"Managers");
             loadAssociates();
             applyFilter();
         };
     });
 }
-
 /* Associates */
 function loadAssociates(){
-    associateList.innerHTML = "";
 
-    const selectedManagers = getSelected(managerList);
+    associateList.innerHTML =
+        `<label><input type="checkbox" value="ALL"><b> All</b></label>`;
 
-    let rows = selectedManagers.length
-        ? defectRows.filter(r => selectedManagers.includes(r[COL_MANAGER]))
-        : defectRows;
+    const mgr = getSelected(managerList);
+    const pkg = getSelected(packageList);
+
+    let rows = [...defectRows];
+
+    if(mgr.length)
+        rows = rows.filter(r => mgr.includes(r[COL_MANAGER]));
+
+    if(pkg.length)
+        rows = rows.filter(r => pkg.includes(r[COL_PACKAGE]));
 
     [...new Set(rows.map(r => r[COL_AA]).filter(Boolean))]
-    .forEach(a => {
-        associateList.innerHTML += 
-        `<label><input type="checkbox" value="${a}"> ${a}</label>`;
-    });
+        .forEach(a=>{
+            associateList.innerHTML +=
+                `<label><input type="checkbox" value="${a}"> ${a}</label>`;
+        });
 
-    addSelectAll(associateList);
+    associateList.querySelectorAll("input").forEach(cb=>{
+        cb.onchange = e=>{
+            e.target.value==="ALL"
+                ? handleAllToggle(associateList)
+                : syncAllFromChildren(associateList);
 
-    associateList.querySelectorAll("input").forEach(cb => {
-        cb.onchange = () => {
-            updateButton(associateList);
+            updateText(associateBtn,associateList,"Associates");
             applyFilter();
         };
     });
 }
-
 /* Dates */
 function loadDates(){
     dateList.innerHTML = "";
@@ -524,15 +521,47 @@ function loadDates(){
     });
 }
 
+function loadPackages(){
+    packageList.innerHTML =
+        `<label><input type="checkbox" value="ALL"><b> All</b></label>`;
+
+    [...new Set(defectRows.map(r => r[COL_PACKAGE]).filter(Boolean))]
+        .forEach(p=>{
+            packageList.innerHTML +=
+                `<label><input type="checkbox" value="${p}"> ${p}</label>`;
+        });
+
+    packageList.querySelectorAll("input").forEach(cb=>{
+        cb.onchange = e=>{
+            e.target.value==="ALL"
+                ? handleAllToggle(packageList)
+                : syncAllFromChildren(packageList);
+
+            updateText(packageBtn,packageList,"Package Type");
+            loadAssociates();
+            applyFilter();
+        };
+    });
+}
+
 function applyFilter(){
 let rows=[...defectRows];
 const mgr=getSelected(managerList);
 const aa=getSelected(associateList);
 const dt=getSelected(dateList);
+const pkg=getSelected(packageList);
 
-if(mgr.length) rows=rows.filter(r=>mgr.includes(r[COL_MANAGER]));
-if(aa.length) rows=rows.filter(r=>aa.includes(r[COL_AA]));
-if(dt.length) rows=rows.filter(r=>dt.includes(excelDate(r[COL_DATE])));
+if(mgr.length)
+    rows = rows.filter(r => mgr.includes(r[COL_MANAGER]));
+
+if(pkg.length)
+    rows = rows.filter(r => pkg.includes(r[COL_PACKAGE]));
+
+if(aa.length)
+    rows = rows.filter(r => aa.includes(r[COL_AA]));
+
+if(dt.length)
+    rows = rows.filter(r => dt.includes(excelDate(r[COL_DATE])));
 
 if(showOnlyUnreviewed)
 rows = rows.filter(r => {
