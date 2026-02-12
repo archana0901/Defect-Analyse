@@ -255,7 +255,7 @@ body{
 
 <div class="header">
 <h1>AA-wise Defect Details</h1>
-<button class="back-btn" onclick="history.back()">← Back</button>
+<button class="back-btn" onclick="goHome()">← Back</button>
 </div>
 
 <div class="filter-bar">
@@ -388,22 +388,63 @@ return serial;
 }
 
 function addSelectAll(container){
-const selectAll=document.createElement("label");
-selectAll.innerHTML=`<input type="checkbox" value="__ALL__"> <b>Select All</b>`;
-container.prepend(selectAll);
 
-selectAll.querySelector("input").onchange=function(){
-container.querySelectorAll("input:not([value='__ALL__'])")
-.forEach(cb=>cb.checked=this.checked);
-updateButton(container);
-applyFilter();
-};
+    // Create Select All checkbox
+    const wrapper = document.createElement("label");
+    wrapper.innerHTML =
+        `<input type="checkbox" value="__ALL__"> <b>Select All</b>`;
+    container.prepend(wrapper);
+
+    const selectAll = container.querySelector('input[value="__ALL__"]');
+
+    function getChildren(){
+        return container.querySelectorAll(
+            'input:not([value="__ALL__"])'
+        );
+    }
+
+    // When Select All clicked
+    selectAll.addEventListener("change", function(){
+
+        getChildren().forEach(cb => {
+            cb.checked = this.checked;
+        });
+
+        updateButton(container);
+        applyFilter();
+    });
+
+    // When any child clicked
+    container.querySelectorAll(
+        'input:not([value="__ALL__"])'
+    ).forEach(cb => {
+
+        cb.addEventListener("change", function(){
+
+            const total = getChildren().length;
+            const checked = [...getChildren()]
+                .filter(x => x.checked).length;
+
+            // Auto check/uncheck Select All
+            selectAll.checked = (total === checked);
+
+            updateButton(container);
+            applyFilter();
+        });
+
+    });
+
+    // Auto check Select All initially
+    selectAll.checked = true;
+    getChildren().forEach(cb => cb.checked = true);
 }
 
 function getSelected(container){
-return [...container.querySelectorAll("input:checked")]
-.map(i=>i.value).filter(v=>v!=="__ALL__");
+    return [...container.querySelectorAll("input:checked")]
+        .map(i => i.value)
+        .filter(v => v !== "__ALL__");
 }
+
 
 function updateButton(container){
 let btn;
@@ -418,29 +459,69 @@ else btn.innerText=selected.length+" Selected";
 }
 
 function loadManagers(){
-managerList.innerHTML="";
-[...new Set(defectRows.map(r=>r[COL_MANAGER]).filter(Boolean))]
-.forEach(m=>managerList.innerHTML+=`<label><input type="checkbox" value="${m}"> ${m}</label>`);
-addSelectAll(managerList);
-managerList.querySelectorAll("input").forEach(cb=>cb.onchange=()=>{updateButton(managerList);loadAssociates();applyFilter();});
+    managerList.innerHTML = "";
+
+    [...new Set(defectRows.map(r => r[COL_MANAGER]).filter(Boolean))]
+    .forEach(m => {
+        managerList.innerHTML += 
+        `<label><input type="checkbox" value="${m}"> ${m}</label>`;
+    });
+
+    addSelectAll(managerList);
+
+    managerList.querySelectorAll("input").forEach(cb => {
+        cb.onchange = () => {
+            updateButton(managerList);
+            loadAssociates();
+            applyFilter();
+        };
+    });
 }
 
+/* Associates */
 function loadAssociates(){
-associateList.innerHTML="";
-const mgr=getSelected(managerList);
-let rows=mgr.length?defectRows.filter(r=>mgr.includes(r[COL_MANAGER])):defectRows;
-[...new Set(rows.map(r=>r[COL_AA]).filter(Boolean))]
-.forEach(a=>associateList.innerHTML+=`<label><input type="checkbox" value="${a}"> ${a}</label>`);
-addSelectAll(associateList);
-associateList.querySelectorAll("input").forEach(cb=>cb.onchange=()=>{updateButton(associateList);applyFilter();});
+    associateList.innerHTML = "";
+
+    const selectedManagers = getSelected(managerList);
+
+    let rows = selectedManagers.length
+        ? defectRows.filter(r => selectedManagers.includes(r[COL_MANAGER]))
+        : defectRows;
+
+    [...new Set(rows.map(r => r[COL_AA]).filter(Boolean))]
+    .forEach(a => {
+        associateList.innerHTML += 
+        `<label><input type="checkbox" value="${a}"> ${a}</label>`;
+    });
+
+    addSelectAll(associateList);
+
+    associateList.querySelectorAll("input").forEach(cb => {
+        cb.onchange = () => {
+            updateButton(associateList);
+            applyFilter();
+        };
+    });
 }
 
+/* Dates */
 function loadDates(){
-dateList.innerHTML="";
-[...new Set(defectRows.map(r=>excelDate(r[COL_DATE])).filter(Boolean))]
-.forEach(d=>dateList.innerHTML+=`<label><input type="checkbox" value="${d}"> ${d}</label>`);
-addSelectAll(dateList);
-dateList.querySelectorAll("input").forEach(cb=>cb.onchange=()=>{updateButton(dateList);applyFilter();});
+    dateList.innerHTML = "";
+
+    [...new Set(defectRows.map(r => excelDate(r[COL_DATE])).filter(Boolean))]
+    .forEach(d => {
+        dateList.innerHTML += 
+        `<label><input type="checkbox" value="${d}"> ${d}</label>`;
+    });
+
+    addSelectAll(dateList);
+
+    dateList.querySelectorAll("input").forEach(cb => {
+        cb.onchange = () => {
+            updateButton(dateList);
+            applyFilter();
+        };
+    });
 }
 
 function applyFilter(){
