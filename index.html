@@ -341,7 +341,7 @@ background:#fff;
 let data=[], missedChart, dateChart;
 let aaExpanded=false;
 let exportTopAttributeData = [];
-const MAX_IMAGES = 10; // adjust if needed
+const MAX_IMAGES = 10; 
 const COL_MANAGER="Manager";
 const COL_AA="Associate 1";
 const COL_INCORRECT="Incorrect";
@@ -701,7 +701,7 @@ function renderAATable(rows){
 }
 function sendMail(){
 
-    // Get top 3 incorrect attributes from the dashboard data
+    //top attributes
     const topAttrs = Object.entries(
         [...document.querySelectorAll(".attr-header span:first-child")]
             .slice(0,3)
@@ -747,7 +747,7 @@ Regards,
         )}&body=${encodeURIComponent(mailBody)}`;
 }
 
-let latestRows = []; // store filtered rows globally
+let latestRows = []; 
 
 function downloadCSV(){
     if(!exportTopAttributeData.length){
@@ -822,3 +822,4 @@ function goToDetailsPage(){
 
 </body>
 </html>
+
