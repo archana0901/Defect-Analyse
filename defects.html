@@ -401,14 +401,11 @@ return new Date(utc_days*86400*1000).toISOString().split("T")[0];
 return serial;
 }
 
-
-
 function getSelected(container){
     return [...container.querySelectorAll("input:checked")]
         .map(i => i.value)
         .filter(v => v !== "__ALL__");
 }
-
 
 function updateButton(container){
 let btn;
@@ -612,7 +609,7 @@ updateDisputedCount();
 function extractImages(row){
     let urls = [];
 
-    // 1️⃣ Extract from HTML column
+    // Extract from HTML column
     if(row[COL_HTML]){
         const matches = row[COL_HTML].match(/<img[^>]+src=["']([^"']+)["']/gi);
         if(matches){
@@ -623,7 +620,7 @@ function extractImages(row){
         }
     }
 
-    // 2️⃣ Extract from ANY column that contains http/https
+    // Extract from ANY column that contains http/https
     Object.keys(row).forEach(key => {
         const value = row[key];
 
@@ -783,3 +780,4 @@ function updateDisputedCount(){
 </script>
 </body>
 </html>
+
