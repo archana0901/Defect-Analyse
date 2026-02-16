@@ -401,12 +401,6 @@ return new Date(utc_days*86400*1000).toISOString().split("T")[0];
 return serial;
 }
 
-function getSelected(container){
-    return [...container.querySelectorAll("input:checked")]
-        .map(i => i.value)
-        .filter(v => v !== "__ALL__");
-}
-
 function updateButton(container){
 let btn;
 if(container===managerList) btn=managerBtn;
@@ -500,22 +494,50 @@ function loadAssociates(){
 }
 /* Dates */
 function loadDates(){
-    dateList.innerHTML = "";
 
-    [...new Set(defectRows.map(r => excelDate(r[COL_DATE])).filter(Boolean))]
-    .forEach(d => {
-        dateList.innerHTML += 
-        `<label><input type="checkbox" value="${d}"> ${d}</label>`;
+    const previouslySelected = getSelected(dateList);
+
+    dateList.innerHTML =
+        `<label><input type="checkbox" value="ALL"><b> All</b></label>`;
+
+    const mgr = getSelected(managerList);
+    const aa  = getSelected(associateList);
+    const pkg = getSelected(packageList);
+
+    let rows = [...defectRows];
+
+    if(mgr.length)
+        rows = rows.filter(r => mgr.includes(r[COL_MANAGER]));
+
+    if(aa.length)
+        rows = rows.filter(r => aa.includes(r[COL_AA]));
+
+    if(pkg.length)
+        rows = rows.filter(r => pkg.includes(r[COL_PACKAGE]));
+
+    const dates = [...new Set(
+        rows.map(r => excelDate(r[COL_DATE])).filter(Boolean)
+    )];
+
+    dates.forEach(d=>{
+        const checked = previouslySelected.includes(d) ? "checked" : "";
+        dateList.innerHTML +=
+            `<label><input type="checkbox" value="${d}" ${checked}> ${d}</label>`;
     });
 
-    addSelectAll(dateList);
+    dateList.querySelectorAll("input").forEach(cb=>{
+        cb.onchange = e=>{
+            e.target.value==="ALL"
+                ? handleAllToggle(dateList)
+                : syncAllFromChildren(dateList);
 
-    dateList.querySelectorAll("input").forEach(cb => {
-        cb.onchange = () => {
-            updateButton(dateList);
+            updateText(dateBtn,dateList,"Dates");
             applyFilter();
         };
     });
+
+    syncAllFromChildren(dateList);
+    updateText(dateBtn,dateList,"Dates");
 }
 
 function loadPackages(){
